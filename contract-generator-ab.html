@@ -1,0 +1,930 @@
+
+<html lang="es"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Contratos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Georgia:wght@400;700&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Georgia:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-blue: #1E3A8A;
+            --light-blue: #EEF2FF;
+            --light-gray: #F3F4F6;
+            --dark-gray: #4B5563;
+        }
+        
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background-color: white;
+            color: #1E3A8A;
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Georgia', 'Times New Roman', serif;
+        }
+        
+        .card-selected {
+            background-color: var(--light-blue);
+            border-color: var(--primary-blue);
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background-color: #E5E7EB;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary-blue);
+            transition: width 0.3s ease;
+        }
+        
+        .form-input {
+            border: 1px solid #D1D5DB;
+            border-radius: 0.375rem;
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+            font-size: 0.875rem;
+            transition: border-color 0.15s ease-in-out;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.375rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            transition: all 0.15s ease-in-out;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-blue);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1e40af;
+        }
+        
+        .btn-outline {
+            border: 1px solid #D1D5DB;
+            background-color: white;
+            color: var(--dark-gray);
+        }
+        
+        .btn-outline:hover {
+            background-color: #F9FAFB;
+        }
+        
+        .contract-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .contract-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .code-viewer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            overflow-y: auto;
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 2% auto;
+            padding: 20px;
+            width: 90%;
+            max-width: 1200px;
+            border-radius: 8px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        
+        .contract-preview {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            line-height: 1.6;
+            padding: 40px;
+            background-color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            color: #000000; /* Texto en negro */
+        }
+        
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            margin-right: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .download-btn svg {
+            margin-right: 0.5rem;
+        }
+        
+        .btn-pdf {
+            background-color: #DC2626;
+            color: white;
+        }
+        
+        .btn-pdf:hover {
+            background-color: #B91C1C;
+        }
+        
+        .btn-gdocs {
+            background-color: #4285F4;
+            color: white;
+        }
+        
+        .btn-gdocs:hover {
+            background-color: #2563EB;
+        }
+        
+        .btn-print {
+            background-color: #1E3A8A;
+            color: white;
+        }
+        
+        .btn-print:hover {
+            background-color: #1E40AF;
+        }
+        
+        .download-options {
+            background-color: #F9FAFB;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .contract-preview, .contract-preview * {
+                visibility: visible;
+            }
+            .contract-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mb-8{margin-bottom:2rem}.ml-2{margin-left:0.5rem}.ml-3{margin-left:0.75rem}.mr-2{margin-right:0.5rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-5{height:1.25rem}.h-6{height:1.5rem}.h-8{height:2rem}.min-h-screen{min-height:100vh}.w-5{width:1.25rem}.w-6{width:1.5rem}.w-8{width:2rem}.max-w-7xl{max-width:80rem}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-between{justify-content:space-between}.gap-6{gap:1.5rem}.gap-8{gap:2rem}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.rounded-lg{border-radius:0.5rem}.border{border-width:1px}.border-t{border-top-width:1px}.border-gray-700{--tw-border-opacity:1;border-color:rgb(55 65 81 / var(--tw-border-opacity, 1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251 / var(--tw-bg-opacity, 1))}.bg-gray-800{--tw-bg-opacity:1;background-color:rgb(31 41 55 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-4{padding-left:1rem;padding-right:1rem}.py-4{padding-top:1rem;padding-bottom:1rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pt-8{padding-top:2rem}.text-2xl{font-size:1.5rem;line-height:2rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.tracking-wider{letter-spacing:0.05em}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.hover\:text-gray-700:hover{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:shadow-md:hover{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}@media (min-width: 640px){.sm\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}}@media (min-width: 768px){.md\:mb-0{margin-bottom:0px}.md\:flex{display:flex}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.md\:items-center{align-items:center}.md\:justify-between{justify-content:space-between}}@media (min-width: 1024px){.lg\:px-8{padding-left:2rem;padding-right:2rem}}</style></head>
+
+<body class="min-h-screen bg-gray-50">
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                <h1 class="ml-2 text-xl font-bold text-gray-800">Generador de Contratos</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="mb-8">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between mt-2 text-sm text-gray-500">
+                <span>Tipo de contrato</span>
+                <span>Detalles</span>
+                <span>Revisión</span>
+            </div>
+        </div>
+
+        <!-- Step 1: Contract Type Selection -->
+        <div id="step1" class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-6">Selecciona el tipo de contrato</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="contract-card border rounded-lg p-5 hover:shadow-md card-selected" data-contract="laboral">
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="ml-3 text-lg font-semibold">Contrato Laboral</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm">Acuerdo entre empleador y empleado que establece condiciones de trabajo, salario y responsabilidades.</p>
+                </div>
+                
+                <div class="contract-card border rounded-lg p-5 hover:shadow-md" data-contract="arrendamiento">
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        <h3 class="ml-3 text-lg font-semibold">Contrato de Arrendamiento</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm">Acuerdo para el alquiler de una propiedad inmobiliaria entre propietario e inquilino.</p>
+                </div>
+                
+                <div class="contract-card border rounded-lg p-5 hover:shadow-md" data-contract="servicios">
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                        <h3 class="ml-3 text-lg font-semibold">Contrato de Servicios</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm">Acuerdo para la prestación de servicios profesionales entre un proveedor y un cliente.</p>
+                </div>
+                
+                <div class="contract-card border rounded-lg p-5 hover:shadow-md" data-contract="compraventa">
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="ml-3 text-lg font-semibold">Contrato de Compraventa</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm">Acuerdo para la transferencia de propiedad de un bien a cambio de un precio entre vendedor y comprador.</p>
+                </div>
+                
+                <div class="contract-card border rounded-lg p-5 hover:shadow-md" data-contract="promesa">
+                    <div class="flex items-center mb-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-primary-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="ml-3 text-lg font-semibold">Contrato de Promesa</h3>
+                    </div>
+                    <p class="text-gray-600 text-sm">Acuerdo preliminar donde las partes se comprometen a celebrar un contrato definitivo en el futuro.</p>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex justify-end">
+                <button id="nextToStep2" class="btn btn-primary">
+                    Continuar
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 2: Contract Details -->
+        <div id="step2" class="bg-white rounded-lg shadow-sm p-6 mb-8 hidden">
+            <h2 class="text-2xl font-bold mb-6">Detalles del contrato</h2>
+            
+            <!-- Laboral Contract Form -->
+            <div id="form-laboral" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Datos del Empleador</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre o Razón Social</label>
+                            <input type="text" class="form-input" id="empleador-nombre">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">NIF/CIF</label>
+                            <input type="text" class="form-input" id="empleador-nif">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                            <input type="text" class="form-input" id="empleador-direccion">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Datos del Empleado</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                            <input type="text" class="form-input" id="empleado-nombre">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">DNI/NIE</label>
+                            <input type="text" class="form-input" id="empleado-dni">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                            <input type="text" class="form-input" id="empleado-direccion">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-4">Condiciones del Contrato</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Puesto de Trabajo</label>
+                            <input type="text" class="form-input" id="laboral-puesto">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Salario Bruto Anual (€)</label>
+                            <input type="number" class="form-input" id="laboral-salario">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Inicio</label>
+                            <input type="date" class="form-input" id="laboral-fecha-inicio">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Duración del Contrato</label>
+                            <select class="form-input" id="laboral-duracion">
+                                <option value="indefinido">Indefinido</option>
+                                <option value="temporal">Temporal</option>
+                                <option value="practicas">Prácticas</option>
+                            </select>
+                        </div>
+                        <div class="mb-4" id="laboral-fecha-fin-container" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Finalización</label>
+                            <input type="date" class="form-input" id="laboral-fecha-fin">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jornada Laboral</label>
+                            <select class="form-input" id="laboral-jornada">
+                                <option value="completa">Completa</option>
+                                <option value="parcial">Parcial</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Arrendamiento Contract Form -->
+            <div id="form-arrendamiento" class="hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Datos del Arrendador</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                            <input type="text" class="form-input" id="arrendador-nombre">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">DNI/NIE</label>
+                            <input type="text" class="form-input" id="arrendador-dni">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+                            <input type="text" class="form-input" id="arrendador-direccion">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Datos del Arrendatario</h3>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                            <input type="text" class="form-input" id="arrendatario-nombre">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">DNI/NIE</label>
+                            <input type="text" class="form-input" id="arrendatario-dni">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección Actual</label>
+                            <input type="text" class="form-input" id="arrendatario-direccion">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-semibold mb-4">Datos del Inmueble</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Dirección del Inmueble</label>
+                            <input type="text" class="form-input" id="inmueble-direccion">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Inmueble</label>
+                            <select class="form-input" id="inmueble-tipo">
+                                <option value="vivienda">Vivienda</option>
+                                <option value="local">Local Comercial</option>
+                                <option value="oficina">Oficina</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Superficie (m²)</label>
+                            <input type="number" class="form-input" id="inmueble-superficie">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Referencia Catastral</label>
+                            <input type="text" class="form-input" id="inmueble-catastral">
+                        </div>
+                    </div>
+                    
+                    <h3 class="text-lg font-semibold mb-4 mt-6">Condiciones del Contrato</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Renta Mensual (€)</label>
+                            <input type="number" class="form-input" id="arrendamiento-renta">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fianza (€)</label>
+                            <input type="number" class="form-input" id="arrendamiento-fianza">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Inicio</label>
+                            <input type="date" class="form-input" id="arrendamiento-fecha-inicio">
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Duración (años)</label>
+                            <input type="number" class="form-input" id="arrendamiento-duracion" min="1" value="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Servicios Contract Form -->
+            <div id="form-servicios" class="hidden">
+                <!-- Contenido del formulario de servicios -->
+                <!-- (Omitido por brevedad) -->
+            </div>
+            
+            <!-- Compraventa Contract Form -->
+            <div id="form-compraventa" class="hidden">
+                <!-- Contenido del formulario de compraventa -->
+                <!-- (Omitido por brevedad) -->
+            </div>
+            
+            <!-- Promesa Contract Form -->
+            <div id="form-promesa" class="hidden">
+                <!-- Contenido del formulario de promesa -->
+                <!-- (Omitido por brevedad) -->
+            </div>
+            
+            <div class="mt-8 flex justify-between">
+                <button id="backToStep1" class="btn btn-outline">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Volver
+                </button>
+                <button id="nextToStep3" class="btn btn-primary">
+                    Continuar
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Contract Review -->
+        <div id="step3" class="bg-white rounded-lg shadow-sm p-6 mb-8 hidden">
+            <h2 class="text-2xl font-bold mb-6">Revisión del contrato</h2>
+            
+            <div class="download-options no-print">
+                <h3 class="text-lg font-semibold mb-3">Opciones de descarga</h3>
+                <div class="flex flex-wrap">
+                    <button id="downloadPdf" class="download-btn btn-pdf">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                        </svg>
+                        Descargar PDF
+                    </button>
+                    <button id="downloadGDocs" class="download-btn btn-gdocs">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Exportar a Google Docs
+                    </button>
+                    <button id="printContract" class="download-btn btn-print">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        Imprimir
+                    </button>
+                </div>
+            </div>
+            
+            <div class="contract-preview bg-white border rounded-lg p-8 mb-6">
+                <div id="contract-content"></div>
+            </div>
+            
+            <div class="mt-8 flex justify-between">
+                <button id="backToStep2" class="btn btn-outline no-print">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                    Volver
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="md:flex md:justify-between">
+                <div class="mb-6 md:mb-0">
+                    <h2 class="text-lg font-semibold">Generador de Contratos</h2>
+                    <p class="mt-2 text-sm text-gray-300">Crea contratos legales de forma rápida y sencilla.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-8 sm:grid-cols-3">
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">Recursos</h3>
+                        <ul class="mt-4 space-y-2">
+                            <li><a href="#" class="text-sm text-gray-400 hover:text-white">Guía de uso</a></li>
+                            <li><a href="#" class="text-sm text-gray-400 hover:text-white">Preguntas frecuentes</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-semibold text-gray-300 uppercase tracking-wider">Legal</h3>
+                        <ul class="mt-4 space-y-2">
+                            <li><a href="#" class="text-sm text-gray-400 hover:text-white">Términos de uso</a></li>
+                            <li><a href="#" class="text-sm text-gray-400 hover:text-white">Política de privacidad</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-gray-700 pt-8 md:flex md:items-center md:justify-between">
+                <p class="text-sm text-gray-400">© 2023 Generador de Contratos. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Code Viewer Button -->
+    <div class="code-viewer">
+        <button id="viewCodeBtn" class="btn btn-primary shadow-lg flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+            </svg>
+            Ver Código
+        </button>
+    </div>
+
+    <!-- Code Modal -->
+    <div id="codeModal" class="modal">
+        <div class="modal-content">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Código HTML</h3>
+                <button id="closeModal" class="text-gray-500 hover:text-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="flex justify-end mb-2">
+                <button id="copyCodeBtn" class="btn btn-outline flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    Copiar Código
+                </button>
+            </div>
+            <pre id="codeContent"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let selectedContract = null;
+        
+        // DOM Elements
+        const contractCards = document.querySelectorAll('.contract-card');
+        const nextToStep2Button = document.getElementById('nextToStep2');
+        const backToStep1Button = document.getElementById('backToStep1');
+        const nextToStep3Button = document.getElementById('nextToStep3');
+        const backToStep2Button = document.getElementById('backToStep2');
+        const downloadPdfButton = document.getElementById('downloadPdf');
+        const downloadGDocsButton = document.getElementById('downloadGDocs');
+        const printContractButton = document.getElementById('printContract');
+        const progressBar = document.getElementById('progress-bar');
+        
+        // Step elements
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+        const step3 = document.getElementById('step3');
+        
+        // Form elements
+        const formLaboral = document.getElementById('form-laboral');
+        const formArrendamiento = document.getElementById('form-arrendamiento');
+        const formServicios = document.getElementById('form-servicios');
+        const formCompraventa = document.getElementById('form-compraventa');
+        const formPromesa = document.getElementById('form-promesa');
+        
+        // Contract content
+        const contractContent = document.getElementById('contract-content');
+        
+        // Code viewer elements
+        const viewCodeBtn = document.getElementById('viewCodeBtn');
+        const codeModal = document.getElementById('codeModal');
+        const closeModal = document.getElementById('closeModal');
+        const copyCodeBtn = document.getElementById('copyCodeBtn');
+        const codeContent = document.getElementById('codeContent');
+        
+        // Initialize
+        function init() {
+            // Contract card selection
+            contractCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    // Remove selected class from all cards
+                    contractCards.forEach(c => c.classList.remove('card-selected'));
+                    
+                    // Add selected class to clicked card
+                    card.classList.add('card-selected');
+                    
+                    // Enable next button
+                    nextToStep2Button.disabled = false;
+                    
+                    // Store selected contract type
+                    selectedContract = card.dataset.contract;
+                });
+            });
+            
+            // Navigation buttons
+            nextToStep2Button.addEventListener('click', () => {
+                step1.classList.add('hidden');
+                step2.classList.remove('hidden');
+                progressBar.style.width = '50%';
+                
+                // Show appropriate form based on selected contract
+                showContractForm(selectedContract);
+            });
+            
+            backToStep1Button.addEventListener('click', () => {
+                step2.classList.add('hidden');
+                step1.classList.remove('hidden');
+                progressBar.style.width = '0%';
+            });
+            
+            nextToStep3Button.addEventListener('click', () => {
+                step2.classList.add('hidden');
+                step3.classList.remove('hidden');
+                progressBar.style.width = '100%';
+                
+                // Generate contract preview
+                generateContractPreview();
+            });
+            
+            backToStep2Button.addEventListener('click', () => {
+                step3.classList.add('hidden');
+                step2.classList.remove('hidden');
+                progressBar.style.width = '50%';
+            });
+            
+            // Contract duration change for laboral contract
+            const laboralDuracion = document.getElementById('laboral-duracion');
+            const laboralFechaFinContainer = document.getElementById('laboral-fecha-fin-container');
+            
+            if (laboralDuracion) {
+                laboralDuracion.addEventListener('change', () => {
+                    if (laboralDuracion.value === 'indefinido') {
+                        laboralFechaFinContainer.style.display = 'none';
+                    } else {
+                        laboralFechaFinContainer.style.display = 'block';
+                    }
+                });
+            }
+            
+            // Print button
+            printContractButton.addEventListener('click', () => {
+                window.print();
+            });
+            
+            // Download PDF button
+            downloadPdfButton.addEventListener('click', () => {
+                alert('Función de descarga de PDF simulada. En una implementación real, se utilizaría una biblioteca como html2pdf.js para generar el PDF.');
+            });
+            
+            // Download Google Docs button
+            downloadGDocsButton.addEventListener('click', () => {
+                alert('Función de exportación a Google Docs simulada. En una implementación real, se utilizaría la API de Google Docs para exportar el contenido.');
+            });
+            
+            // Code viewer functionality
+            viewCodeBtn.addEventListener('click', () => {
+                // Get the current HTML code
+                const htmlCode = document.documentElement.outerHTML;
+                
+                // Display the code in the modal
+                codeContent.textContent = htmlCode;
+                
+                // Show the modal
+                codeModal.style.display = 'block';
+            });
+            
+            closeModal.addEventListener('click', () => {
+                codeModal.style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', (event) => {
+                if (event.target === codeModal) {
+                    codeModal.style.display = 'none';
+                }
+            });
+            
+            // Copy code button
+            copyCodeBtn.addEventListener('click', () => {
+                const codeText = codeContent.textContent;
+                
+                // Create a temporary textarea element to copy the text
+                const textarea = document.createElement('textarea');
+                textarea.value = codeText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                
+                // Change button text temporarily
+                const originalText = copyCodeBtn.innerHTML;
+                copyCodeBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Copiado!
+                `;
+                
+                setTimeout(() => {
+                    copyCodeBtn.innerHTML = originalText;
+                }, 2000);
+            });
+        }
+        
+        // Show appropriate contract form
+        function showContractForm(contractType) {
+            formLaboral.classList.add('hidden');
+            formArrendamiento.classList.add('hidden');
+            formServicios.classList.add('hidden');
+            formCompraventa.classList.add('hidden');
+            formPromesa.classList.add('hidden');
+            
+            switch(contractType) {
+                case 'laboral':
+                    formLaboral.classList.remove('hidden');
+                    break;
+                case 'arrendamiento':
+                    formArrendamiento.classList.remove('hidden');
+                    break;
+                case 'servicios':
+                    formServicios.classList.remove('hidden');
+                    break;
+                case 'compraventa':
+                    formCompraventa.classList.remove('hidden');
+                    break;
+                case 'promesa':
+                    formPromesa.classList.remove('hidden');
+                    break;
+            }
+        }
+        
+        // Generate contract preview based on form data
+        function generateContractPreview() {
+            let html = '';
+            
+            switch(selectedContract) {
+                case 'laboral':
+                    html = generateLaboralContract();
+                    break;
+                case 'arrendamiento':
+                    html = generateArrendamientoContract();
+                    break;
+                case 'servicios':
+                    html = generateServiciosContract();
+                    break;
+                case 'compraventa':
+                    html = generateCompraventaContract();
+                    break;
+                case 'promesa':
+                    html = generatePromesaContract();
+                    break;
+            }
+            
+            contractContent.innerHTML = html;
+        }
+        
+        // Generate Laboral Contract
+        function generateLaboralContract() {
+            const empleadorNombre = document.getElementById('empleador-nombre').value || '[Nombre del Empleador]';
+            const empleadorNif = document.getElementById('empleador-nif').value || '[NIF/CIF]';
+            const empleadorDireccion = document.getElementById('empleador-direccion').value || '[Dirección]';
+            
+            const empleadoNombre = document.getElementById('empleado-nombre').value || '[Nombre del Empleado]';
+            const empleadoDni = document.getElementById('empleado-dni').value || '[DNI/NIE]';
+            const empleadoDireccion = document.getElementById('empleado-direccion').value || '[Dirección]';
+            
+            const puesto = document.getElementById('laboral-puesto').value || '[Puesto]';
+            const salario = document.getElementById('laboral-salario').value || '[Salario]';
+            const fechaInicio = document.getElementById('laboral-fecha-inicio').value || '[Fecha de Inicio]';
+            const duracion = document.getElementById('laboral-duracion').value;
+            const fechaFin = document.getElementById('laboral-fecha-fin').value || '[Fecha de Fin]';
+            const jornada = document.getElementById('laboral-jornada').value;
+            
+            const jornadaText = jornada === 'completa' ? 'jornada completa' : 'jornada parcial';
+            const duracionText = duracion === 'indefinido' ? 'duración indefinida' : 
+                                duracion === 'temporal' ? `duración determinada hasta ${fechaFin}` : 
+                                `contrato en prácticas hasta ${fechaFin}`;
+            
+            const currentDate = new Date().toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric'
+            });
+            
+            return `
+                <h1 style="text-align: center; font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem; color: #1E3A8A;">CONTRATO DE TRABAJO</h1>
+                
+                <p style="text-align: right; margin-bottom: 2rem;">En [Ciudad], a ${currentDate}</p>
+                
+                <h2 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; color: #1E3A8A;">REUNIDOS</h2>
+                
+                <p style="margin-bottom: 1rem;">De una parte, <strong>${empleadorNombre}</strong>, con NIF/CIF ${empleadorNif} y domicilio en ${empleadorDireccion}, en adelante "EL EMPLEADOR".</p>
+                
+                <p style="margin-bottom: 2rem;">Y de otra parte, <strong>${empleadoNombre}</strong>, con DNI/NIE ${empleadoDni} y domicilio en ${empleadoDireccion}, en adelante "EL TRABAJADOR".</p>
+                
+                <h2 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; color: #1E3A8A;">MANIFIESTAN</h2>
+                
+                <p style="margin-bottom: 1rem;">Que EL EMPLEADOR está interesado en contratar los servicios de EL TRABAJADOR y éste acepta prestar sus servicios profesionales para EL EMPLEADOR, de acuerdo con las siguientes:</p>
+                
+                <h2 style="font-size: 1.2rem; font-weight: bold; margin-bottom: 1rem; color: #1E3A8A;">CLÁUSULAS</h2>
+                
+                <p style="margin-bottom: 1rem;"><strong>PRIMERA.- Objeto del contrato.</strong> EL TRABAJADOR prestará sus servicios como ${puesto} para EL EMPLEADOR, realizando las funciones propias de dicho puesto.</p>
+                
+                <p style="margin-bottom: 1rem;"><strong>SEGUNDA.- Duración.</strong> El presente contrato tendrá ${duracionText} y comenzará a regir a partir del día ${fechaInicio}.</p>
+                
+                <p style="margin-bottom: 1rem;"><strong>TERCERA.- Jornada laboral.</strong> EL TRABAJADOR prestará sus servicios en ${jornadaText}, de acuerdo con el horario establecido por EL EMPLEADOR.</p>
+                
+                <p style="margin-bottom: 1rem;"><strong>CUARTA.- Remuneración.</strong> EL TRABAJADOR percibirá una remuneración bruta anual de ${salario} euros, distribuida en 12 pagas mensuales más 2 pagas extraordinarias.</p>
+                
+                <p style="margin-bottom: 1rem;"><strong>QUINTA.- Vacaciones.</strong> EL TRABAJADOR tendrá derecho a 30 días naturales de vacaciones retribuidas por año trabajado, o la parte proporcional que corresponda en caso de no alcanzar el año completo.</p>
+                
+                <p style="margin-bottom: 1rem;"><strong>SEXTA.- Periodo de prueba.</strong> Se establece un periodo de prueba de 2 meses, durante el cual cualquiera de las partes podrá dar por finalizado el contrato sin necesidad de preaviso ni indemnización.</p>
+                
+                <p style="margin-bottom: 1rem;"><strong>SÉPTIMA.- Legislación aplicable.</strong> En lo no previsto en este contrato, se estará a lo dispuesto en la legislación vigente que resulte de aplicación, y particularmente, el Estatuto de los Trabajadores y el Convenio Colectivo aplicable.</p>
+                
+                <p style="margin-bottom: 3rem;">Y en prueba de conformidad con cuanto antecede, firman el presente contrato por duplicado en el lugar y fecha arriba indicados.</p>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 4rem;">
+                    <div style="width: 45%;">
+                        <p style="border-top: 1px solid #1E3A8A; padding-top: 0.5rem; text-align: center;">EL EMPLEADOR</p>
+                    </div>
+                    <div style="width: 45%;">
+                        <p style="border-top: 1px solid #1E3A8A; padding-top: 0.5rem; text-align: center;">EL TRABAJADOR</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Generate Arrendamiento Contract
+        function generateArrendamientoContract() {
+            // Implementación similar a generateLaboralContract()
+            return "<h1>Contrato de Arrendamiento</h1><p>Contenido del contrato...</p>";
+        }
+        
+        // Generate Servicios Contract
+        function generateServiciosContract() {
+            // Implementación similar a generateLaboralContract()
+            return "<h1>Contrato de Servicios</h1><p>Contenido del contrato...</p>";
+        }
+        
+        // Generate Compraventa Contract
+        function generateCompraventaContract() {
+            // Implementación similar a generateLaboralContract()
+            return "<h1>Contrato de Compraventa</h1><p>Contenido del contrato...</p>";
+        }
+        
+        // Generate Promesa Contract
+        function generatePromesaContract() {
+            // Implementación similar a generateLaboralContract()
+            return "<h1>Contrato de Promesa</h1><p>Contenido del contrato...</p>";
+        }
+        
+        // Initialize the application
+        init();
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94d42f60e1edb7f2',t:'MTc0OTUwOTM5Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: medium; visibility: hidden;"></iframe>
+
+</body></html>
