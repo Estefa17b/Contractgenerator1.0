@@ -2,865 +2,1019 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A&amp;B Power Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&amp;family=Cormorant+Garamond:wght@400;600&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&amp;family=Times+New+Roman&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+        
         body {
-            font-family: 'Times New Roman', serif;
-            background-color: #f0f4f8;
-            color: #1E293B;
+            font-family: 'Times New Roman', Times, serif;
         }
-        .playfair {
-            font-family: 'Playfair Display', serif;
-        }
-        .cormorant {
-            font-family: 'Cormorant Garamond', serif;
-        }
-        .preview-field {
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        .form-control {
-            padding: 0.5rem;
-            border-radius: 0.375rem;
-            border: 1px solid #cbd5e1;
-            width: 100%;
-        }
-        .form-control:focus {
-            outline: none;
-            border-color: #1E3A8A;
-            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
-        }
-        .section-title {
-            color: #1E3A8A;
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-        .form-card {
-            background-color: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-        .document-actions {
-            position: sticky;
-            top: 1rem;
-            z-index: 10;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            padding: 0.5rem;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-            gap: 0.25rem;
-            width: 90%;
-            margin: 0 auto 1rem auto;
-        }
-        .action-button {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.4rem 0.75rem;
-            border-radius: 0.375rem;
-            font-weight: 600;
-            transition: transform 0.2s, box-shadow 0.2s;
-            min-width: 100px;
-            font-size: 0.875rem;
-        }
-        .action-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .preview-document {
-            background-color: white;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            padding: 2.54cm;
-            font-size: 12pt;
-            line-height: 1.5;
-            min-height: 35.56cm; /* Tamaño legal */
-            width: 21.59cm;
-            max-width: 100%;
-            margin: 0 auto;
-            font-family: 'Times New Roman', serif;
-        }
-        .body-paragraph {
-            text-align: justify;
-            margin-bottom: 1em;
-            width: 100%;
-        }
-        .bold-label {
-            font-weight: bold;
-        }
-        .placeholder-text {
-            color: #94a3b8;
-            font-style: italic;
-        }
+        
         @media print {
-            @page {
-                size: legal;
-                margin: 2.54cm;
+            body * {
+                visibility: hidden;
             }
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: 'Times New Roman', serif;
-                font-size: 12pt;
+            #documentPreview, #documentPreview * {
+                visibility: visible;
+            }
+            #documentPreview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                padding: 40px;
+                font-family: 'Times New Roman', Times, serif !important;
+                font-size: 12pt !important;
             }
             .no-print {
                 display: none !important;
             }
-            .print-only {
-                display: block !important;
-            }
-            .preview-document {
-                box-shadow: none;
-                border: none;
-                padding: 0;
-                margin: 0;
-                width: 100%;
-                min-height: auto;
-            }
-            .body-paragraph {
-                text-align: justify;
-                margin-bottom: 1em;
-            }
         }
+        
+        .editable-content {
+            min-height: 20px;
+        }
+        
+        .btn-active {
+            background-color: #4a5568;
+            color: white;
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #1E3A8A;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        /* Document Preview */
+        .preview-document {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            padding: 1cm;
+        }
+        
+        .body-paragraph {
+            text-align: justify;
+            margin-bottom: 1em;
+        }
+        
+        /* Floating Action Bar */
+        .document-actions {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .action-button {
+            transition: transform 0.2s;
+        }
+        
+        .action-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .filled-data {
+            font-weight: bold;
+        }
+        
+        .signature-line {
+            width: 100%;
+            border-bottom: 1px solid #000;
+            margin-bottom: 8px;
+        }
+        
+        /* Logo controls */
         .logo-controls {
             position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 5px;
-            background-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            border-radius: 4px;
             padding: 5px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 100;
         }
         
-        /* Estilos para los toggles */
-        .toggle-blue {
-            background-color: #1E3A8A !important;
+        .logo-container:hover .logo-controls {
+            display: flex;
         }
         
-        /* Estilos responsivos para la previsualización */
-        @media (max-width: 768px) {
-            .preview-document {
-                padding: 1.5cm;
-                width: 100%;
-            }
+        /* HTML Code Viewer */
+        #codeViewer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
         }
         
-        /* Estilos para el texto de ejemplo en los campos */
-        input::placeholder, textarea::placeholder {
-            color: #94a3b8;
-            opacity: 0.7;
+        #htmlCodeModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            z-index: 1001;
+            overflow: auto;
         }
         
-        /* Estilos para las líneas de firma */
-        .signature-line {
+        .code-modal-content {
+            background-color: #f8f9fa;
+            margin: 5% auto;
+            padding: 20px;
             width: 80%;
-            margin: 0 auto;
-            border-bottom: 1px solid #000;
+            max-width: 1000px;
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .code-container {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+        }
+        
+        .date-place-text {
+            font-weight: normal;
         }
     </style>
-<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border-width:0}.fixed{position:fixed}.relative{position:relative}.inset-0{inset:0px}.z-50{z-index:50}.m-0{margin:0px}.mx-auto{margin-left:auto;margin-right:auto}.my-8{margin-top:2rem;margin-bottom:2rem}.mb-1{margin-bottom:0.25rem}.mb-12{margin-bottom:3rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}.mr-1{margin-right:0.25rem}.mt-1{margin-top:0.25rem}.mt-12{margin-top:3rem}.mt-2{margin-top:0.5rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.block{display:block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-16{height:4rem}.h-4{height:1rem}.h-6{height:1.5rem}.h-full{height:100%}.max-h-20{max-height:5rem}.max-h-\[80vh\]{max-height:80vh}.w-1\/2{width:50%}.w-11{width:2.75rem}.w-16{width:4rem}.w-3\/4{width:75%}.w-4{width:1rem}.w-6{width:1.5rem}.w-\[90\%\]{width:90%}.w-full{width:100%}.max-w-3xl{max-width:48rem}.cursor-pointer{cursor:pointer}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-3{grid-template-columns:repeat(3, minmax(0, 1fr))}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-2{gap:0.5rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-md{border-radius:0.375rem}.border-2{border-width:2px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.border-gray-700{--tw-border-opacity:1;border-color:rgb(55 65 81 / var(--tw-border-opacity, 1))}.bg-\[\#0050A0\]{--tw-bg-opacity:1;background-color:rgb(0 80 160 / var(--tw-bg-opacity, 1))}.bg-\[\#1A56DB\]{--tw-bg-opacity:1;background-color:rgb(26 86 219 / var(--tw-bg-opacity, 1))}.bg-\[\#1E3A8A\]{--tw-bg-opacity:1;background-color:rgb(30 58 138 / var(--tw-bg-opacity, 1))}.bg-black{--tw-bg-opacity:1;background-color:rgb(0 0 0 / var(--tw-bg-opacity, 1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.bg-gray-200{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.bg-gray-700{--tw-bg-opacity:1;background-color:rgb(55 65 81 / var(--tw-bg-opacity, 1))}.bg-gray-800{--tw-bg-opacity:1;background-color:rgb(31 41 55 / var(--tw-bg-opacity, 1))}.bg-green-600{--tw-bg-opacity:1;background-color:rgb(22 163 74 / var(--tw-bg-opacity, 1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-red-700{--tw-bg-opacity:1;background-color:rgb(185 28 28 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-opacity-50{--tw-bg-opacity:0.5}.p-1{padding:0.25rem}.p-4{padding:1rem}.p-6{padding:1.5rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-10{padding-top:2.5rem;padding-bottom:2.5rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pt-4{padding-top:1rem}.pt-8{padding-top:2rem}.text-left{text-align:left}.text-center{text-align:center}.text-4xl{font-size:2.25rem;line-height:2.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.text-\[\#1E3A8A\]{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.text-gray-300{--tw-text-opacity:1;color:rgb(209 213 219 / var(--tw-text-opacity, 1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175 / var(--tw-text-opacity, 1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.after\:absolute::after{content:var(--tw-content);position:absolute}.after\:left-\[2px\]::after{content:var(--tw-content);left:2px}.after\:top-\[2px\]::after{content:var(--tw-content);top:2px}.after\:h-5::after{content:var(--tw-content);height:1.25rem}.after\:w-5::after{content:var(--tw-content);width:1.25rem}.after\:rounded-full::after{content:var(--tw-content);border-radius:9999px}.after\:border::after{content:var(--tw-content);border-width:1px}.after\:border-gray-300::after{content:var(--tw-content);--tw-border-opacity:1;border-color:rgb(209 213 219 / var(--tw-border-opacity, 1))}.after\:bg-white::after{content:var(--tw-content);--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.after\:transition-all::after{content:var(--tw-content);transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.after\:content-\[\'\'\]::after{--tw-content:'';content:var(--tw-content)}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216 / var(--tw-bg-opacity, 1))}.hover\:bg-blue-800:hover{--tw-bg-opacity:1;background-color:rgb(30 64 175 / var(--tw-bg-opacity, 1))}.hover\:bg-blue-900:hover{--tw-bg-opacity:1;background-color:rgb(30 58 138 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-300:hover{--tw-bg-opacity:1;background-color:rgb(209 213 219 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-800:hover{--tw-bg-opacity:1;background-color:rgb(31 41 55 / var(--tw-bg-opacity, 1))}.hover\:bg-green-700:hover{--tw-bg-opacity:1;background-color:rgb(21 128 61 / var(--tw-bg-opacity, 1))}.hover\:bg-red-600:hover{--tw-bg-opacity:1;background-color:rgb(220 38 38 / var(--tw-bg-opacity, 1))}.hover\:bg-red-800:hover{--tw-bg-opacity:1;background-color:rgb(153 27 27 / var(--tw-bg-opacity, 1))}.hover\:text-gray-700:hover{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.peer:checked ~ .peer-checked\:bg-\[\#1E3A8A\]{--tw-bg-opacity:1;background-color:rgb(30 58 138 / var(--tw-bg-opacity, 1))}.peer:checked ~ .peer-checked\:after\:translate-x-full::after{content:var(--tw-content);--tw-translate-x:100%;transform:translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.peer:checked ~ .peer-checked\:after\:border-white::after{content:var(--tw-content);--tw-border-opacity:1;border-color:rgb(255 255 255 / var(--tw-border-opacity, 1))}.peer:focus ~ .peer-focus\:outline-none{outline:2px solid transparent;outline-offset:2px}.peer:focus ~ .peer-focus\:ring-4{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(4px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.peer:focus ~ .peer-focus\:ring-blue-300{--tw-ring-opacity:1;--tw-ring-color:rgb(147 197 253 / var(--tw-ring-opacity, 1))}@media (min-width: 768px){.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:text-2xl{font-size:1.5rem;line-height:2rem}.md\:text-5xl{font-size:3rem;line-height:1}}@media (min-width: 1024px){.lg\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.lg\:text-6xl{font-size:3.75rem;line-height:1}}</style></head>
-<body>
-    <header class="bg-[#1E3A8A] text-white py-10 shadow-md">
-        <div class="container mx-auto text-center px-4">
-            <h1 class="text-4xl md:text-5xl lg:text-6xl playfair font-bold mb-4">A&amp;B Power Generator</h1>
-            <p class="text-xl md:text-2xl max-w-3xl mx-auto">Genera poderes legales personalizados para trámites en entidades públicas panameñas de forma rápida y sencilla</p>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width: 640px){.container{max-width:640px}}@media (min-width: 768px){.container{max-width:768px}}@media (min-width: 1024px){.container{max-width:1024px}}@media (min-width: 1280px){.container{max-width:1280px}}@media (min-width: 1536px){.container{max-width:1536px}}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-2{margin-bottom:0.5rem}.mb-4{margin-bottom:1rem}.mb-8{margin-bottom:2rem}.mr-1{margin-right:0.25rem}.mr-2{margin-right:0.5rem}.mt-16{margin-top:4rem}.mt-4{margin-top:1rem}.mt-8{margin-top:2rem}.block{display:block}.flex{display:flex}.grid{display:grid}.hidden{display:none}.h-16{height:4rem}.min-h-screen{min-height:100vh}.w-16{width:4rem}.w-full{width:100%}.max-w-3xl{max-width:48rem}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-4{gap:1rem}.gap-8{gap:2rem}.rounded{border-radius:0.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-b-lg{border-bottom-right-radius:0.5rem;border-bottom-left-radius:0.5rem}.rounded-t-lg{border-top-left-radius:0.5rem;border-top-right-radius:0.5rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254 / var(--tw-border-opacity, 1))}.border-gray-600{--tw-border-opacity:1;border-color:rgb(75 85 99 / var(--tw-border-opacity, 1))}.bg-\[\#0050A0\]{--tw-bg-opacity:1;background-color:rgb(0 80 160 / var(--tw-bg-opacity, 1))}.bg-\[\#047857\]{--tw-bg-opacity:1;background-color:rgb(4 120 87 / var(--tw-bg-opacity, 1))}.bg-\[\#1A56DB\]{--tw-bg-opacity:1;background-color:rgb(26 86 219 / var(--tw-bg-opacity, 1))}.bg-\[\#1E3A8A\]{--tw-bg-opacity:1;background-color:rgb(30 58 138 / var(--tw-bg-opacity, 1))}.bg-\[\#374151\]{--tw-bg-opacity:1;background-color:rgb(55 65 81 / var(--tw-bg-opacity, 1))}.bg-\[\#B91C1C\]{--tw-bg-opacity:1;background-color:rgb(185 28 28 / var(--tw-bg-opacity, 1))}.bg-blue-500{--tw-bg-opacity:1;background-color:rgb(59 130 246 / var(--tw-bg-opacity, 1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246 / var(--tw-bg-opacity, 1))}.bg-gray-200{--tw-bg-opacity:1;background-color:rgb(229 231 235 / var(--tw-bg-opacity, 1))}.bg-gray-500{--tw-bg-opacity:1;background-color:rgb(107 114 128 / var(--tw-bg-opacity, 1))}.bg-gray-800{--tw-bg-opacity:1;background-color:rgb(31 41 55 / var(--tw-bg-opacity, 1))}.bg-red-500{--tw-bg-opacity:1;background-color:rgb(239 68 68 / var(--tw-bg-opacity, 1))}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.p-2{padding:0.5rem}.p-6{padding:1.5rem}.p-8{padding:2rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-4{padding-left:1rem;padding-right:1rem}.px-6{padding-left:1.5rem;padding-right:1.5rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-12{padding-top:3rem;padding-bottom:3rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.py-6{padding-top:1.5rem;padding-bottom:1.5rem}.py-8{padding-top:2rem;padding-bottom:2rem}.pt-4{padding-top:1rem}.text-left{text-align:left}.text-center{text-align:center}.font-\[\'Playfair_Display\'\]{font-family:'Playfair Display'}.font-\[\'Times_New_Roman\'\]{font-family:'Times New Roman'}.text-2xl{font-size:1.5rem;line-height:2rem}.text-5xl{font-size:3rem;line-height:1}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.font-bold{font-weight:700}.font-semibold{font-weight:600}.text-\[\#1E3A8A\]{--tw-text-opacity:1;color:rgb(30 58 138 / var(--tw-text-opacity, 1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99 / var(--tw-text-opacity, 1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.opacity-90{opacity:0.9}.shadow{--tw-shadow:0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-lg{--tw-shadow:0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.hover\:bg-blue-100:hover{--tw-bg-opacity:1;background-color:rgb(219 234 254 / var(--tw-bg-opacity, 1))}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216 / var(--tw-bg-opacity, 1))}.hover\:bg-blue-800:hover{--tw-bg-opacity:1;background-color:rgb(30 64 175 / var(--tw-bg-opacity, 1))}.hover\:bg-gray-700:hover{--tw-bg-opacity:1;background-color:rgb(55 65 81 / var(--tw-bg-opacity, 1))}.hover\:bg-green-700:hover{--tw-bg-opacity:1;background-color:rgb(21 128 61 / var(--tw-bg-opacity, 1))}.hover\:bg-red-800:hover{--tw-bg-opacity:1;background-color:rgb(153 27 27 / var(--tw-bg-opacity, 1))}.focus\:border-blue-300:focus{--tw-border-opacity:1;border-color:rgb(147 197 253 / var(--tw-border-opacity, 1))}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}@media (min-width: 768px){.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.md\:text-2xl{font-size:1.5rem;line-height:2rem}.md\:text-6xl{font-size:3.75rem;line-height:1}}</style></head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-[#1E3A8A] text-white py-12 px-4">
+        <div class="container mx-auto text-center">
+            <h1 class="font-['Playfair_Display'] text-5xl md:text-6xl font-bold mb-4">A&amp;B Power Generator</h1>
+            <p class="text-xl md:text-2xl opacity-90 max-w-3xl mx-auto font-['Times_New_Roman']">
+                Generador profesional de poderes legales para trámites administrativos y judiciales
+            </p>
         </div>
     </header>
-
-    <main class="container mx-auto p-4 my-8">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Formulario -->
-            <div class="no-print">
-                <!-- Sección 1: Configuración del Documento -->
-                <div class="form-card">
-                    <h2 class="section-title playfair">Configuración del Documento</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Poder</label>
-                            <select id="powerType" class="form-control w-full">
-                                <option value="general">Poder General</option>
-                                <option value="special" selected="">Poder Especial</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Entidad Destinataria</label>
-                            <select id="recipientEntity" class="form-control w-full">
-                                <option value="">Seleccione una entidad</option>
-                                <option value="DIRECCIÓN GENERAL DE INGRESOS" selected="">Dirección General de Ingresos</option>
-                                <option value="MINISTERIO DE ECONOMÍA Y FINANZAS">Ministerio de Economía y Finanzas</option>
-                                <option value="REGISTRO PÚBLICO DE PANAMÁ">Registro Público de Panamá</option>
-                                <option value="AUTORIDAD NACIONAL DE ADUANAS">Autoridad Nacional de Aduanas</option>
-                                <option value="MINISTERIO DE COMERCIO E INDUSTRIAS">Ministerio de Comercio e Industrias</option>
-                                <option value="OTRO">Otro</option>
-                            </select>
-                            <div id="otherEntityContainer" class="mt-2 hidden">
-                                <input type="text" id="otherEntityInput" placeholder="Nombre de la entidad" class="form-control w-full">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-sm font-medium text-gray-700">Logo de la Firma (opcional)</label>
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="includeLogo" class="sr-only peer">
-                                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1E3A8A]"></div>
-                            </label>
-                        </div>
-                        <div id="logoContainer" class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center mt-2 hidden">
-                            <div id="logoPreview" class="hidden mb-2">
-                                <img id="logoImage" src="" alt="Logo" class="max-h-20 mx-auto">
-                            </div>
-                            <input type="file" id="logoFileInput" accept="image/*" class="hidden">
-                            <button id="uploadLogoBtn" class="bg-[#1E3A8A] hover:bg-blue-800 text-white px-4 py-2 rounded-md">
-                                Seleccionar Logo
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sección 2: Datos del Otorgante -->
-                <div class="form-card">
-                    <h2 class="section-title playfair">Datos del Otorgante</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
-                            <input type="text" id="fullName" class="form-control w-full" placeholder="Ej: María González Pérez">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Género</label>
-                            <select id="gender" class="form-control w-full">
-                                <option value="masculino">Masculino</option>
-                                <option value="femenino" selected="">Femenino</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nacionalidad</label>
-                            <input type="text" id="nationality" class="form-control w-full" placeholder="Ej: panameña">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Cédula</label>
-                            <input type="text" id="idNumber" class="form-control w-full" placeholder="Ej: 8-888-8888">
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-sm font-medium text-gray-700">Domicilio</label>
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="includeAddress" class="sr-only peer" checked="">
-                                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1E3A8A]"></div>
-                            </label>
-                        </div>
-                        <textarea id="address" rows="2" class="form-control w-full mt-1" placeholder="Ej: Provincia y Distrito de Panamá, corregimiento de Bella Vista, El Cangrejo, Edificio MIKA"></textarea>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <div class="flex justify-between items-center">
-                            <label class="block text-sm font-medium text-gray-700">Cargo</label>
-                            <label class="inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="includePosition" class="sr-only peer" checked="">
-                                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1E3A8A]"></div>
-                            </label>
-                        </div>
-                        <input type="text" id="position" class="form-control w-full mt-1" placeholder="Ej: Presidente y Representante Legal">
-                    </div>
-                </div>
-
-                <!-- Sección 3: Datos de la Organización/Sociedad -->
-                <div class="form-card">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="section-title playfair m-0">Datos de la Organización/Sociedad</h2>
-                        <label class="inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="includeOrganization" class="sr-only peer" checked="">
-                            <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1E3A8A]"></div>
-                        </label>
-                    </div>
-                    
-                    <div id="organizationFields" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Organización</label>
-                            <input type="text" id="entityName" class="form-control w-full" placeholder="Ej: Centro de Estudios Panamá">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Organización</label>
-                            <select id="entityType" class="form-control w-full">
-                                <option value="">Seleccione un tipo</option>
-                                <option value="Sociedad Anónima">Sociedad Anónima</option>
-                                <option value="Fundación de Interés Privado">Fundación de Interés Privado</option>
-                                <option value="Sociedad de Responsabilidad Limitada">Sociedad de Responsabilidad Limitada</option>
-                                <option value="Asociación Sin Fines de Lucro">Asociación Sin Fines de Lucro</option>
-                                <option value="Asociación de Interés Público" selected="">Asociación de Interés Público</option>
-                                <option value="Otro">Otro</option>
-                            </select>
-                            <div id="otherEntityTypeContainer" class="mt-2 hidden">
-                                <input type="text" id="otherEntityType" placeholder="Tipo de organización" class="form-control w-full">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Folio/Registro</label>
-                            <input type="text" id="registrationNumber" class="form-control w-full" placeholder="Ej: 250436355">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Domicilio de la Organización</label>
-                            <textarea id="orgAddress" rows="2" class="form-control w-full" placeholder="Ej: Edificio San Bernardo, Plaza de Francia, Corregimiento de San Felipe, Ciudad de Panamá"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sección 4: Datos del Apoderado -->
-                <div class="form-card">
-                    <h2 class="section-title playfair">Datos del Apoderado</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
-                            <input type="text" id="attorneyName" class="form-control w-full" placeholder="Ej: Juan Pérez Rodríguez">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Género</label>
-                            <select id="attorneyGender" class="form-control w-full">
-                                <option value="masculino" selected="">Masculino</option>
-                                <option value="femenino">Femenino</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nacionalidad</label>
-                            <input type="text" id="attorneyNationality" class="form-control w-full" placeholder="Ej: panameño">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Cédula</label>
-                            <input type="text" id="attorneyIdNumber" class="form-control w-full" placeholder="Ej: 8-123-4567">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Profesión</label>
-                            <input type="text" id="attorneyProfession" class="form-control w-full" placeholder="Ej: abogado en ejercicio">
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <label class="block text-sm font-medium text-gray-700">Número de Idoneidad</label>
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="includeIdoneity" class="sr-only peer">
-                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1E3A8A]"></div>
-                                </label>
-                            </div>
-                            <input type="text" id="attorneyIdoneity" class="form-control w-full mt-1" placeholder="Ej: 12345">
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center">
-                                <label class="block text-sm font-medium text-gray-700">Cargo</label>
-                                <label class="inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="includeAttorneyPosition" class="sr-only peer" checked="">
-                                    <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#1E3A8A]"></div>
-                                </label>
-                            </div>
-                            <input type="text" id="attorneyPosition" class="form-control w-full mt-1" placeholder="Ej: Supervisor del Centro de Estudios">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
-                            <input type="email" id="attorneyEmail" class="form-control w-full" placeholder="Ej: juan.perez@ejemplo.com">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Domicilio Profesional</label>
-                            <textarea id="attorneyAddress" rows="2" class="form-control w-full" placeholder="Ej: Casco Antiguo, Distrito y Provincia de Panamá, Corregimiento de San Felipe"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                            <input type="tel" id="attorneyPhone" class="form-control w-full" placeholder="Ej: 507-123-4567">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sección 5: Objeto del Poder -->
-                <div class="form-card">
-                    <h2 class="section-title playfair">Objeto del Poder</h2>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción del Objeto</label>
-                        <textarea id="powerScope" rows="6" class="form-control w-full" placeholder="Ej: presente y gestione, ante la Dirección General de Ingresos del Ministerio de Economía y Finanzas, la solicitud de autorización de recibir donaciones deducibles del Impuesto sobre la Renta de los organismo sin fines de lucro."></textarea>
-                    </div>
-                </div>
-
-                <!-- Sección 6: Fecha y Lugar -->
-                <div class="form-card">
-                    <h2 class="section-title playfair">Fecha y Lugar</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de Otorgamiento</label>
-                            <input type="date" id="grantDate" class="form-control w-full" value="2025-02-15">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Lugar</label>
-                            <input type="text" id="grantPlace" class="form-control w-full" placeholder="Ej: Panamá">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botón de Generar Documento -->
-                <div class="mt-6 flex justify-center">
-                    <button id="generateBtn" class="bg-[#1E3A8A] hover:bg-blue-800 text-white px-6 py-3 rounded-md font-bold text-lg w-[90%] mx-auto">
-                        Generar Documento
-                    </button>
-                </div>
-                
-                <!-- Botón para ver código HTML -->
-                <div class="mt-6">
-                    <button id="showHtmlBtn" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded-md">
-                        Ver código HTML
-                    </button>
-                </div>
-            </div>
+    
+    <div class="container mx-auto px-4 py-8">
+        <!-- Detalles del Poder (Movido arriba) -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-[#1E3A8A]">Detalles del Poder</h2>
             
-            <!-- Vista Previa -->
-            <div class="relative">
-                <h2 class="text-xl font-bold mb-4 text-[#1E3A8A]">Vista Previa del Documento</h2>
-                
-                <!-- Barra de acciones flotante (inicialmente oculta) -->
-                <div id="documentActions" class="document-actions mb-4">
-                    <div class="grid grid-cols-3 gap-2 mb-2">
-                        <button id="copyBtn" class="action-button bg-green-600 hover:bg-green-700 text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path>
-                            </svg>
-                            Copiar
-                        </button>
-                        <button id="downloadPdfBtn" class="action-button bg-red-700 hover:bg-red-800 text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
-                            </svg>
-                            PDF
-                        </button>
-                        <button id="downloadWordBtn" class="action-button bg-[#0050A0] hover:bg-blue-900 text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            Word
-                        </button>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="googleDocsBtn" class="action-button bg-[#1A56DB] hover:bg-blue-700 text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            Google Docs
-                        </button>
-                        <button id="printBtn" class="action-button bg-gray-700 hover:bg-gray-800 text-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                            </svg>
-                            Imprimir
-                        </button>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Tipo de Poder:</label>
+                    <select id="powerType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="special">Poder Especial</option>
+                        <option value="general">Poder General</option>
+                    </select>
                 </div>
                 
-                <div class="preview-document">
-                    <!-- Mensaje inicial -->
-                    <div id="previewPlaceholder" class="flex flex-col items-center justify-center h-full hidden">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                        </svg>
-                        <p class="text-gray-500 text-center text-lg">Haga clic en "Generar Documento" para ver la vista previa</p>
-                    </div>
-                    
-                    <div id="documentPreview" class="w-full">
-                        <!-- Logo (si se selecciona) -->
-                        <div id="documentLogo" class="mb-6 hidden relative">
-                            <img id="previewLogo" src="" alt="Logo" class="max-h-20">
-                            <div id="logoControls" class="logo-controls hidden">
-                                <button id="increaseSizeBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 p-1 rounded">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                                    </svg>
-                                </button>
-                                <button id="decreaseSizeBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 p-1 rounded">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6"></path>
-                                    </svg>
-                                </button>
-                                <button id="removeLogoBtn" class="bg-red-500 hover:bg-red-600 text-white p-1 rounded">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <!-- Título del documento -->
-                        <h3 id="documentTitle" class="font-bold text-xl mb-6 text-left">PODER</h3>
-                        
-                        <!-- Destinatario -->
-                        <p id="recipientBlock" class="mb-6 font-bold text-left">SEÑORES <span id="preview-recipientEntity" class="preview-field">DIRECCIÓN GENERAL DE INGRESOS</span></p>
-                        <p id="recipientMinistry" class="mb-6 font-bold text-left">MINISTERIO DE ECONOMÍA Y FINANZAS</p>
-                        
-                        <!-- Cuerpo del documento -->
-                        <p class="body-paragraph">
-                            Quien suscribe, <span id="preview-fullName" class="preview-field">[NOMBRE]</span>, <span id="preview-gender-text">[GÉNERO]</span>, <span id="preview-nationality" class="preview-field">[NACIONALIDAD]</span>, mayor de edad, <span id="preview-maritalStatus-text"></span>portador(a) de la cédula de identidad personal No. <span id="preview-idNumber" class="preview-field">[CÉDULA]</span>, <span id="preview-address-container">con domicilio ubicado en <span id="preview-address" class="preview-field">[DOMICILIO]</span>,</span> <span id="preview-position-container">en mi calidad de <span id="preview-position" class="preview-field">[CARGO]</span> de la</span>
-                        </p>
-                        
-                        <p id="organization-paragraph" class="body-paragraph">
-                            <span id="preview-entityType" class="preview-field">ASOCIACIÓN DE INTERÉS PÚBLICO</span> denominada <span id="preview-entityName" class="preview-field">[NOMBRE DE ORGANIZACIÓN]</span>, con personería jurídica debidamente reconocida e inscrita al Folio No. <span id="preview-registrationNumber" class="preview-field">[REGISTRO]</span> en el Registro Público de Panamá, con domicilio en <span id="preview-orgAddress" class="preview-field">[DOMICILIO DE ORGANIZACIÓN]</span>, acudo respetuosamente ante su despacho con el objeto de
-                        </p>
-                        
-                        <p class="body-paragraph">
-                            Otorgar <span id="preview-powerType-text">Poder Especial</span> amplio y suficiente como en derecho se requiere al Licenciado <span id="preview-attorneyName" class="preview-field">[NOMBRE DEL APODERADO]</span>, <span id="preview-attorneyGender-text">[GÉNERO]</span>, <span id="preview-attorneyNationality" class="preview-field">[NACIONALIDAD]</span>, mayor de edad, portador de la cédula de identidad personal No. <span id="preview-attorneyIdNumber" class="preview-field">[CÉDULA]</span>, de profesión <span id="preview-attorneyProfession" class="preview-field">[PROFESIÓN]</span>, <span id="preview-attorneyIdoneity-container" class="hidden">con número de idoneidad <span id="preview-attorneyIdoneity" class="preview-field">[NÚMERO DE IDONEIDAD]</span>,</span> <span id="preview-attorneyPosition-container"><span id="preview-attorneyPosition" class="preview-field">[CARGO]</span>,</span> con correo electrónico <span id="preview-attorneyEmail" class="preview-field">[EMAIL]</span> y con domicilio profesional ubicado en <span id="preview-attorneyAddress" class="preview-field">[DOMICILIO PROFESIONAL]</span>, localizable en los teléfonos <span id="preview-attorneyPhone" class="preview-field">[TELÉFONO]</span>, donde recibe notificaciones personales, para que, en representación de la asociación,
-                        </p>
-                        
-                        <p class="body-paragraph">
-                            <span id="preview-powerScope" class="preview-field">[OBJETO DEL PODER]</span>
-                        </p>
-                        
-                        <p class="body-paragraph">
-                            <span id="preview-grantPlace" class="preview-field">[LUGAR]</span>, <span id="preview-grantDate" class="preview-field">14</span> de febrero del 2025.
-                        </p>
-                        
-                        <div class="mt-12 pt-8">
-                            <div class="flex justify-between">
-                                <div class="w-1/2 text-center px-4">
-                                    <p class="mb-12">OTORGO PODER ESPECIAL</p>
-                                    <div class="signature-line mb-2"></div>
-                                    <p><span id="preview-fullName2" class="preview-field">[NOMBRE]</span></p>
-                                    <p><span class="font-bold">C.I.P. No.</span> <span id="preview-idNumber2" class="preview-field">[CÉDULA]</span></p>
-                                    <p>REPRESENTANTE LEGAL</p>
-                                </div>
-                                <div class="w-1/2 text-center px-4">
-                                    <p class="mb-12">ACEPTO PODER ESPECIAL</p>
-                                    <div class="signature-line mb-2"></div>
-                                    <p><span id="preview-attorneyName2" class="preview-field">[NOMBRE DEL APODERADO]</span></p>
-                                    <p><span class="font-bold">C.I.P. No.</span> <span id="preview-attorneyIdNumber2" class="preview-field">[CÉDULA]</span></p>
-                                    <p><span id="preview-attorneyPosition2" class="preview-field">[CARGO]</span></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                    <label class="block text-gray-700 mb-2">Entidad:</label>
+                    <select id="entityType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="DIRECCIÓN GENERAL DE INGRESOS">Dirección General de Ingresos (DGI)</option>
+                        <option value="MINISTERIO DE ECONOMÍA Y FINANZAS">Ministerio de Economía y Finanzas (MEF)</option>
+                        <option value="AUTORIDAD NACIONAL DE ADUANAS">Autoridad Nacional de Aduanas</option>
+                        <option value="MINISTERIO DE TRABAJO Y DESARROLLO LABORAL">Ministerio de Trabajo y Desarrollo Laboral (MITRADEL)</option>
+                        <option value="CAJA DE SEGURO SOCIAL">Caja de Seguro Social (CSS)</option>
+                        <option value="MINISTERIO DE COMERCIO E INDUSTRIAS">Ministerio de Comercio e Industrias (MICI)</option>
+                        <option value="REGISTRO PÚBLICO DE PANAMÁ">Registro Público de Panamá</option>
+                        <option value="AUTORIDAD NACIONAL DE TIERRAS">Autoridad Nacional de Tierras (ANATI)</option>
+                        <option value="MINISTERIO DE VIVIENDA Y ORDENAMIENTO TERRITORIAL">Ministerio de Vivienda y Ordenamiento Territorial (MIVIOT)</option>
+                        <option value="AUTORIDAD DE PROTECCIÓN AL CONSUMIDOR Y DEFENSA DE LA COMPETENCIA">Autoridad de Protección al Consumidor y Defensa de la Competencia (ACODECO)</option>
+                        <option value="MINISTERIO DE SALUD">Ministerio de Salud (MINSA)</option>
+                        <option value="MINISTERIO DE EDUCACIÓN">Ministerio de Educación (MEDUCA)</option>
+                        <option value="Otro">Otra entidad</option>
+                    </select>
+                </div>
+                
+                <div id="otherEntityTypeField" class="hidden">
+                    <label class="block text-gray-700 mb-2">Especificar entidad:</label>
+                    <input type="text" id="otherEntityType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Nombre de la entidad">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <label class="text-gray-700">Logo</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="includeLogo">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div id="logoField" class="hidden">
+                    <label class="block text-gray-700 mb-2">Seleccionar logo:</label>
+                    <input type="file" id="logoInput" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" accept="image/*">
                 </div>
             </div>
         </div>
         
-        <!-- Modal para mostrar código HTML -->
-        <div id="htmlModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-            <div class="bg-white p-6 rounded-lg w-3/4 max-h-[80vh] overflow-y-auto">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">Código HTML</h3>
-                    <button id="closeModalBtn" class="text-gray-500 hover:text-gray-700">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-[#1E3A8A]">Datos del Poderdante</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Nombre completo:</label>
+                    <input type="text" id="granterName" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: María Fernanda González Pérez">
                 </div>
-                <pre id="htmlCode" class="bg-gray-100 p-4 rounded-md overflow-x-auto text-sm"></pre>
-                <div class="mt-4 flex justify-end">
-                    <button id="copyHtmlBtn" class="bg-[#1E3A8A] hover:bg-blue-800 text-white px-4 py-2 rounded-md">
-                        Copiar código
-                    </button>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Género:</label>
+                    <select id="granterGender" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Estado Civil:</label>
+                    <select id="granterMaritalStatus" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="soltero">Soltero/a</option>
+                        <option value="casado">Casado/a</option>
+                        <option value="divorciado">Divorciado/a</option>
+                        <option value="viudo">Viudo/a</option>
+                        <option value="unido">Unión libre</option>
+                        <option value="separado">Separado/a</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Tipo de Identificación:</label>
+                    <select id="granterIdType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="cédula">Cédula de Identidad Personal</option>
+                        <option value="pasaporte">Pasaporte</option>
+                        <option value="carnet">Carnet de Residencia</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Número de Identificación:</label>
+                    <input type="text" id="granterId" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: 8-123-456">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <label class="text-gray-700">Domicilio</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="includeGranterAddress" checked="">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div id="granterAddressField">
+                    <label class="block text-gray-700 mb-2">Domicilio:</label>
+                    <input type="text" id="granterAddress" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: Calle 50, Edificio Global Plaza, Piso 20, Oficina 2001">
                 </div>
             </div>
         </div>
-    </main>
-
-    <footer class="bg-gray-800 text-white py-8 mt-12">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-4">
-                <h3 class="text-xl font-bold mb-2">A&amp;B LegalDocs</h3>
-                <p class="text-gray-300">Herramienta para la creación de documentos legales de representación para trámites en entidades públicas panameñas.</p>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-[#1E3A8A]">Datos del Apoderado</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Nombre completo:</label>
+                    <input type="text" id="attorneyName" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: Carlos Alberto Rodríguez Sánchez">
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Género:</label>
+                    <select id="attorneyGender" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Estado Civil:</label>
+                    <select id="attorneyMaritalStatus" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="soltero">Soltero/a</option>
+                        <option value="casado">Casado/a</option>
+                        <option value="divorciado">Divorciado/a</option>
+                        <option value="viudo">Viudo/a</option>
+                        <option value="unido">Unión libre</option>
+                        <option value="separado">Separado/a</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Profesión:</label>
+                    <input type="text" id="attorneyProfession" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: Abogado, Contador, Arquitecto">
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Tipo de Identificación:</label>
+                    <select id="attorneyIdType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="cédula">Cédula de Identidad Personal</option>
+                        <option value="pasaporte">Pasaporte</option>
+                        <option value="carnet">Carnet de Residencia</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Número de Identificación:</label>
+                    <input type="text" id="attorneyId" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: 8-987-654">
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Domicilio:</label>
+                    <input type="text" id="attorneyAddress" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: Avenida Balboa, PH Ocean View, Apto. 15B">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <label class="text-gray-700">Número de idoneidad</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="includeIdoneity">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div id="idoneityField" class="hidden">
+                    <label class="block text-gray-700 mb-2">Número de Idoneidad:</label>
+                    <input type="text" id="attorneyIdoneity" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: 12345">
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <label class="text-gray-700">Cargo del apoderado</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="includeAttorneyPosition">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div id="attorneyPositionField" class="hidden">
+                    <label class="block text-gray-700 mb-2">Cargo:</label>
+                    <input type="text" id="attorneyPosition" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: Gerente Legal, Supervisor, Director">
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-[#1E3A8A]">Datos de la Organización/Sociedad</h2>
+            
+            <div class="flex items-center justify-between mb-4">
+                <label class="text-gray-700">Información de organización</label>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="includeOrganization">
+                    <span class="toggle-slider"></span>
+                </label>
             </div>
             
-            <div class="border-t border-gray-700 pt-4 mt-4">
-                <h4 class="font-semibold mb-2">Información Legal</h4>
-                <p class="text-gray-300 text-sm mb-4">Este generador crea documentos que deben ser revisados por un profesional del derecho antes de su uso oficial.<br>
+            <div id="organizationFields" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+                <div>
+                    <label class="block text-gray-700 mb-2">Nombre de la Organización/Sociedad:</label>
+                    <input type="text" id="entityName" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: Corporación Legal Internacional, S.A.">
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Tipo de Organización/Sociedad:</label>
+                    <select id="orgType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                        <option value="Sociedad Anónima">Sociedad Anónima</option>
+                        <option value="Organización sin Fines de Lucro">Organización sin Fines de Lucro</option>
+                        <option value="Fundación de Interés Privado">Fundación de Interés Privado</option>
+                        <option value="Sociedad de Responsabilidad Limitada">Sociedad de Responsabilidad Limitada</option>
+                        <option value="Asociación Civil">Asociación Civil</option>
+                        <option value="Fundación">Fundación</option>
+                        <option value="Cooperativa">Cooperativa</option>
+                        <option value="Organización No Gubernamental">Organización No Gubernamental</option>
+                        <option value="Asociación de Interés Público">Asociación de Interés Público</option>
+                        <option value="Empresa Individual de Responsabilidad Limitada">Empresa Individual de Responsabilidad Limitada</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                
+                <div id="otherOrgTypeField" class="hidden">
+                    <label class="block text-gray-700 mb-2">Especificar tipo:</label>
+                    <input type="text" id="otherOrgType" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Tipo de organización/sociedad">
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Número de Registro:</label>
+                    <input type="text" id="registrationNumber" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: 123456789">
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Domicilio de la Organización/Sociedad:</label>
+                    <input type="text" id="orgAddress" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: Torre Global Bank, Calle 50, Piso 25">
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4 text-[#1E3A8A]">Objeto del Poder</h2>
+            
+            <div class="grid grid-cols-1 gap-4">
+                <div>
+                    <label class="block text-gray-700 mb-2">Objeto del Poder:</label>
+                    <textarea id="powerScope" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" rows="3" placeholder="Describa el objeto del poder. Ej: presente y gestione, ante la Dirección General de Ingresos del Ministerio de Economía y Finanzas, la solicitud de autorización..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Fecha de Otorgamiento:</label>
+                    <input type="date" id="grantDate" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                </div>
+                
+                <div>
+                    <label class="block text-gray-700 mb-2">Lugar de Otorgamiento:</label>
+                    <input type="text" id="grantPlace" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300" placeholder="Ej: Panamá, Ciudad de Panamá">
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mb-8">
+            <button id="generateBtn" class="bg-[#1E3A8A] hover:bg-blue-800 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition duration-300">
+                Generar Documento
+            </button>
+        </div>
+        
+        <div id="previewPlaceholder" class="bg-gray-200 rounded-lg p-8 text-center text-gray-600 hidden">
+            <svg class="w-16 h-16 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <p class="text-lg">Complete el formulario y haga clic en "Generar Documento" para ver la vista previa</p>
+        </div>
+        
+        <!-- Floating Action Bar -->
+        <div id="documentActions" class="document-actions p-2 rounded-t-lg no-print mb-1">
+            <div class="flex flex-wrap gap-1 items-center justify-center">
+                <button id="copyBtn" class="action-button px-3 py-1 bg-[#047857] hover:bg-green-700 text-white font-bold rounded shadow text-sm transition duration-300">
+                    <i class="fas fa-copy mr-1"></i> Copiar
+                </button>
+                <button id="downloadPdfBtn" class="action-button px-3 py-1 bg-[#B91C1C] hover:bg-red-800 text-white font-bold rounded shadow text-sm transition duration-300">
+                    <i class="fas fa-file-pdf mr-1"></i> PDF
+                </button>
+                <button id="downloadWordBtn" class="action-button px-3 py-1 bg-[#0050A0] hover:bg-blue-800 text-white font-bold rounded shadow text-sm transition duration-300">
+                    <i class="fas fa-file-word mr-1"></i> Word
+                </button>
+                <button id="googleDocsBtn" class="action-button px-3 py-1 bg-[#1A56DB] hover:bg-blue-700 text-white font-bold rounded shadow text-sm transition duration-300">
+                    <i class="fab fa-google-drive mr-1"></i> Google Docs
+                </button>
+                <button id="printBtn" class="action-button px-3 py-1 bg-[#374151] hover:bg-gray-700 text-white font-bold rounded shadow text-sm transition duration-300">
+                    <i class="fas fa-print mr-1"></i> Imprimir
+                </button>
+            </div>
+        </div>
+        
+        <div id="editorToolbar" class="bg-white text-[#1E3A8A] p-2 rounded-t-lg no-print border-b border-blue-200">
+            <div class="flex flex-wrap gap-1 items-center text-sm">
+                <button id="boldBtn" class="px-2 py-1 hover:bg-blue-100 rounded">
+                    <i class="fas fa-bold"></i>
+                </button>
+                <button id="italicBtn" class="px-2 py-1 hover:bg-blue-100 rounded">
+                    <i class="fas fa-italic"></i>
+                </button>
+                <button id="underlineBtn" class="px-2 py-1 hover:bg-blue-100 rounded">
+                    <i class="fas fa-underline"></i>
+                </button>
+                <select id="fontFamily" class="px-2 py-1 border border-blue-200 text-[#1E3A8A] rounded text-sm">
+                    <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Calibri, sans-serif">Calibri</option>
+                    <option value="Georgia, serif">Georgia</option>
+                </select>
+                <select id="fontSize" class="px-2 py-1 border border-blue-200 text-[#1E3A8A] rounded text-sm">
+                    <option value="12pt" selected="">12pt</option>
+                    <option value="14pt">14pt</option>
+                    <option value="16pt">16pt</option>
+                    <option value="18pt">18pt</option>
+                </select>
+                <select id="lineHeight" class="px-2 py-1 border border-blue-200 text-[#1E3A8A] rounded text-sm">
+                    <option value="1.2">Simple</option>
+                    <option value="1.5" selected="">1.5</option>
+                    <option value="2.0">Doble</option>
+                </select>
+                <button id="alignLeftBtn" class="px-2 py-1 hover:bg-blue-100 rounded">
+                    <i class="fas fa-align-left"></i>
+                </button>
+                <button id="alignCenterBtn" class="px-2 py-1 hover:bg-blue-100 rounded">
+                    <i class="fas fa-align-center"></i>
+                </button>
+                <button id="alignJustifyBtn" class="px-2 py-1 hover:bg-blue-100 rounded active">
+                    <i class="fas fa-align-justify"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="documentPreview" class="preview-document bg-white rounded-b-lg shadow-lg" contenteditable="true">
+            <div class="text-left mb-8 editable-content">
+                <h1 class="text-2xl font-bold mb-2">PODER</h1>
+            </div>
+            
+            <!-- Logo container -->
+            <div id="logoContainer" class="logo-container mb-4 hidden">
+                <img id="logoImage" src="" alt="Logo" style="max-width: 100px; max-height: 100px;">
+                <div class="logo-controls">
+                    <button id="logoSizeSmall" class="px-2 py-1 bg-blue-500 text-white rounded mr-1">S</button>
+                    <button id="logoSizeMedium" class="px-2 py-1 bg-blue-500 text-white rounded mr-1">M</button>
+                    <button id="logoSizeLarge" class="px-2 py-1 bg-blue-500 text-white rounded mr-1">L</button>
+                    <button id="logoRemove" class="px-2 py-1 bg-red-500 text-white rounded">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="editable-content">
+                <p class="body-paragraph text-left font-bold">
+                    SEÑORES <span id="previewEntityHeader">DIRECCIÓN GENERAL DE INGRESOS</span><br>
+                    <span id="previewEntityParent">MINISTERIO DE ECONOMÍA Y FINANZAS</span>
+                </p>
+                
+                <p class="body-paragraph">
+                    Quien suscribe, <span id="previewGranterName" class="filled-data">[NOMBRE DEL PODERDANTE]</span>, <span id="previewGranterGenderText">varón</span>, <span id="previewGranterNationality">panameño</span>, mayor de edad, <span id="previewGranterIdPrefix">portador</span> de <span id="previewGranterIdType">cédula de identidad personal</span> No. <span id="previewGranterId" class="filled-data">[NÚMERO DE IDENTIFICACIÓN]</span>, <span id="previewGranterAddressContainer">con domicilio ubicado en <span id="previewGranterAddress" class="filled-data">[DOMICILIO]</span>, </span><span id="previewGranterPosition">Representante Legal</span> de <span id="previewEntityName2" class="filled-data">[NOMBRE DE ORGANIZACIÓN]</span>, institución pública que ocupa el cargo de <span id="previewGranterOrgPosition">Presidente y Representante Legal</span> de la <span id="previewEntityType">Asociación</span> de Interés Público denominada <span id="previewEntityName3" class="filled-data">[NOMBRE DE ORGANIZACIÓN]</span>, con personería jurídica debidamente reconocida e inscrita al Folio No. <span id="previewRegistrationNumber" class="filled-data">[REGISTRO]</span> en el Registro Público de Panamá, con domicilio en <span id="previewOrgAddress" class="filled-data">[DOMICILIO DE ORGANIZACIÓN]</span>, acudo respetuosamente ante su despacho en calidad de <span id="previewGranterOrgPosition2">Presidente y Representante Legal</span> de <span id="previewEntityName4" class="filled-data">[NOMBRE DE ORGANIZACIÓN]</span>, con el objeto de Otorgar <span id="previewPowerTypeText">PODER ESPECIAL</span> amplio y suficiente como en derecho se requiere <span id="previewGranterPrefix">al</span> <span id="previewGranterTitle">Licenciado</span> <span id="previewAttorneyName" class="filled-data">[NOMBRE DEL APODERADO]</span>, <span id="previewAttorneyGenderText">varón</span>, <span id="previewAttorneyNationality">panameño</span>, mayor de edad, <span id="previewAttorneyIdPrefix">portador</span> de <span id="previewAttorneyIdType">cédula de identidad personal</span> No. <span id="previewAttorneyId" class="filled-data">[NÚMERO DE IDENTIFICACIÓN]</span>, <span id="previewAttorneyProfession" class="filled-data">[PROFESIÓN]</span> en ejercicio, <span id="previewAttorneyPositionContainer"><span id="previewAttorneyPosition" class="filled-data">[CARGO]</span> de <span id="previewEntityName5" class="filled-data">[NOMBRE DE ORGANIZACIÓN]</span>, </span><span id="previewAttorneyIdoneityContainer">con idoneidad profesional número <span id="previewAttorneyIdoneity" class="filled-data">[NÚMERO DE IDONEIDAD]</span>, </span>con domicilio profesional ubicado en <span id="previewAttorneyAddress" class="filled-data">[DOMICILIO]</span>, para que, en representación de la <span id="previewEntityType2">asociación</span>, <span id="previewPowerScope" class="filled-data">[OBJETO DEL PODER]</span>.
+                </p>
+                
+                <p class="body-paragraph">
+                    <span id="previewAttorneyPowersPrefix">El</span> <span id="previewAttorneyPowersTitle">Licenciado</span> <span id="previewAttorneyName2" class="filled-data">[NOMBRE DEL APODERADO]</span>, queda <span id="previewAttorneyPowersGender">facultado</span> expresamente para recibir, notificarse, solicitar, subsanar, obtener copias, comprometer, allanarse, desistir, transigir e interponer los recursos y acciones legales que estime conveniente para el mejor desempeño del presente mandato.
+                </p>
+                
+                <p class="body-paragraph">
+                    <span id="previewGrantPlace" class="date-place-text">[LUGAR]</span>, <span id="previewGrantDate" class="date-place-text">[FECHA]</span>.
+                </p>
+                
+                <div class="mt-16 grid grid-cols-2 gap-8 text-center">
+                    <div>
+                        <p class="mb-1 font-bold">OTORGO PODER ESPECIAL</p>
+                        <div class="signature-line"></div>
+                        <p><span id="previewGranterName2" class="filled-data">[NOMBRE DEL PODERDANTE]</span></p>
+                        <p><span class="font-bold">C.I.P. No.</span> <span id="previewGranterId2" class="filled-data">[NÚMERO DE IDENTIFICACIÓN]</span></p>
+                        <p><span id="previewGranterOrgPosition3" class="font-bold">REPRESENTANTE LEGAL</span></p>
+                    </div>
+                    <div>
+                        <p class="mb-1 font-bold">ACEPTO PODER ESPECIAL</p>
+                        <div class="signature-line"></div>
+                        <p><span id="previewAttorneyName3" class="filled-data">[NOMBRE DEL APODERADO]</span></p>
+                        <p><span class="font-bold">C.I.P. No.</span> <span id="previewAttorneyId2" class="filled-data">[NÚMERO DE IDENTIFICACIÓN]</span></p>
+                        <p><span id="previewAttorneyPosition2" class="filled-data">[CARGO]</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botón para ver código HTML -->
+    <div id="codeViewer">
+        <button id="viewCodeBtn" class="bg-[#1E3A8A] hover:bg-blue-800 text-white font-bold py-2 px-4 rounded-full shadow-lg transition duration-300">
+            <i class="fas fa-code"></i>
+        </button>
+    </div>
+    
+    <!-- Modal para mostrar código HTML -->
+    <div id="htmlCodeModal">
+        <div class="code-modal-content">
+            <div class="code-header">
+                <h3 class="text-xl font-bold">Código HTML</h3>
+                <div>
+                    <button id="copyCodeBtn" class="bg-[#047857] hover:bg-green-700 text-white font-bold py-1 px-3 rounded mr-2">
+                        <i class="fas fa-copy mr-1"></i> Copiar
+                    </button>
+                    <button id="closeCodeBtn" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-1 px-3 rounded">
+                        <i class="fas fa-times mr-1"></i> Cerrar
+                    </button>
+                </div>
+            </div>
+            <div class="code-container" id="htmlCodeContainer">
+                <!-- El código HTML se insertará aquí -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center font-['Times_New_Roman']">
+            <h3 class="text-xl font-bold mb-4">A&amp;B LegalDocs</h3>
+            <p class="mb-4">Herramienta para la creación de documentos legales de representación para trámites en entidades públicas panameñas.</p>
+            
+            <div class="border-t border-gray-600 pt-4 mt-4">
+                <h4 class="font-bold mb-2">Información Legal</h4>
+                <p class="text-sm mb-4">Este generador crea documentos que deben ser revisados por un profesional del derecho antes de su uso oficial.<br>
                 Los documentos generados son plantillas y pueden requerir adaptaciones según el caso específico.</p>
                 
-                <h4 class="font-semibold mb-2">Contacto</h4>
-                <p class="text-gray-300 text-sm">Para consultas legales, contacte a un abogado especializado.<br>
-                © 2025 Hecho por EBD y RAAG. Todos los derechos reservados.<br>
-                Teléfonos: +507 6684-6895 / +507 6577-0502<br>
-                Email: estefania.bd17@gmail.com</p>
+                <h4 class="font-bold mb-2">Contacto</h4>
+                <p class="text-sm mb-1">Para consultas legales, contacte a un abogado especializado.</p>
+                <p class="text-sm mb-1">© 2025 Hecho por EBD y RAAG. Todos los derechos reservados.</p>
+                <p class="text-sm mb-1">Teléfonos: +507 6684-6895 / +507 6577-0502</p>
+                <p class="text-sm">Email: estefania.bd17@gmail.com</p>
             </div>
         </div>
     </footer>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Referencias a elementos del formulario
-            const fullNameInput = document.getElementById('fullName');
-            const nationalityInput = document.getElementById('nationality');
-            const genderSelect = document.getElementById('gender');
-            const idNumberInput = document.getElementById('idNumber');
-            const addressInput = document.getElementById('address');
-            const includeAddressCheck = document.getElementById('includeAddress');
-            const positionInput = document.getElementById('position');
-            const includePositionCheck = document.getElementById('includePosition');
+            // Elementos del formulario
+            const granterNameInput = document.getElementById('granterName');
+            const granterGenderSelect = document.getElementById('granterGender');
+            const granterMaritalStatusSelect = document.getElementById('granterMaritalStatus');
+            const granterIdTypeSelect = document.getElementById('granterIdType');
+            const granterIdInput = document.getElementById('granterId');
+            const includeGranterAddressCheck = document.getElementById('includeGranterAddress');
+            const granterAddressField = document.getElementById('granterAddressField');
+            const granterAddressInput = document.getElementById('granterAddress');
+            
+            const attorneyNameInput = document.getElementById('attorneyName');
+            const attorneyGenderSelect = document.getElementById('attorneyGender');
+            const attorneyMaritalStatusSelect = document.getElementById('attorneyMaritalStatus');
+            const attorneyProfessionInput = document.getElementById('attorneyProfession');
+            const attorneyIdTypeSelect = document.getElementById('attorneyIdType');
+            const attorneyIdInput = document.getElementById('attorneyId');
+            const attorneyAddressInput = document.getElementById('attorneyAddress');
+            const includeIdoneityCheck = document.getElementById('includeIdoneity');
+            const idoneityField = document.getElementById('idoneityField');
+            const attorneyIdoneityInput = document.getElementById('attorneyIdoneity');
+            const includeAttorneyPositionCheck = document.getElementById('includeAttorneyPosition');
+            const attorneyPositionField = document.getElementById('attorneyPositionField');
+            const attorneyPositionInput = document.getElementById('attorneyPosition');
             
             const includeOrganizationCheck = document.getElementById('includeOrganization');
             const organizationFields = document.getElementById('organizationFields');
             const entityTypeSelect = document.getElementById('entityType');
-            const otherEntityTypeContainer = document.getElementById('otherEntityTypeContainer');
+            const otherEntityTypeField = document.getElementById('otherEntityTypeField');
             const otherEntityTypeInput = document.getElementById('otherEntityType');
+            const orgTypeSelect = document.getElementById('orgType');
+            const otherOrgTypeField = document.getElementById('otherOrgTypeField');
+            const otherOrgTypeInput = document.getElementById('otherOrgType');
             const entityNameInput = document.getElementById('entityName');
             const registrationNumberInput = document.getElementById('registrationNumber');
             const orgAddressInput = document.getElementById('orgAddress');
             
-            const attorneyNameInput = document.getElementById('attorneyName');
-            const attorneyGenderSelect = document.getElementById('attorneyGender');
-            const attorneyNationalityInput = document.getElementById('attorneyNationality');
-            const attorneyIdNumberInput = document.getElementById('attorneyIdNumber');
-            const attorneyProfessionInput = document.getElementById('attorneyProfession');
-            const attorneyIdoneityInput = document.getElementById('attorneyIdoneity');
-            const includeIdoneityCheck = document.getElementById('includeIdoneity');
-            const attorneyPositionInput = document.getElementById('attorneyPosition');
-            const includeAttorneyPositionCheck = document.getElementById('includeAttorneyPosition');
-            const attorneyEmailInput = document.getElementById('attorneyEmail');
-            const attorneyAddressInput = document.getElementById('attorneyAddress');
-            const attorneyPhoneInput = document.getElementById('attorneyPhone');
+            const includeLogo = document.getElementById('includeLogo');
+            const logoField = document.getElementById('logoField');
+            const logoInput = document.getElementById('logoInput');
+            const logoContainer = document.getElementById('logoContainer');
+            const logoImage = document.getElementById('logoImage');
+            const logoSizeSmall = document.getElementById('logoSizeSmall');
+            const logoSizeMedium = document.getElementById('logoSizeMedium');
+            const logoSizeLarge = document.getElementById('logoSizeLarge');
+            const logoRemove = document.getElementById('logoRemove');
             
             const powerTypeSelect = document.getElementById('powerType');
-            const recipientEntitySelect = document.getElementById('recipientEntity');
-            const otherEntityContainer = document.getElementById('otherEntityContainer');
-            const otherEntityInput = document.getElementById('otherEntityInput');
             const powerScopeInput = document.getElementById('powerScope');
             const grantDateInput = document.getElementById('grantDate');
             const grantPlaceInput = document.getElementById('grantPlace');
             
-            const includeLogo = document.getElementById('includeLogo');
-            const logoContainer = document.getElementById('logoContainer');
-            const logoFileInput = document.getElementById('logoFileInput');
+            // Elementos de la vista previa
+            const previewEntityHeader = document.getElementById('previewEntityHeader');
+            const previewEntityParent = document.getElementById('previewEntityParent');
+            const previewGranterName = document.getElementById('previewGranterName');
+            const previewGranterName2 = document.getElementById('previewGranterName2');
+            const previewGranterGenderText = document.getElementById('previewGranterGenderText');
+            const previewGranterNationality = document.getElementById('previewGranterNationality');
+            const previewGranterIdPrefix = document.getElementById('previewGranterIdPrefix');
+            const previewGranterIdType = document.getElementById('previewGranterIdType');
+            const previewGranterId = document.getElementById('previewGranterId');
+            const previewGranterId2 = document.getElementById('previewGranterId2');
+            const previewGranterAddressContainer = document.getElementById('previewGranterAddressContainer');
+            const previewGranterAddress = document.getElementById('previewGranterAddress');
+            const previewGranterPrefix = document.getElementById('previewGranterPrefix');
+            const previewGranterTitle = document.getElementById('previewGranterTitle');
+            const previewGranterPosition = document.getElementById('previewGranterPosition');
+            const previewGranterOrgPosition = document.getElementById('previewGranterOrgPosition');
+            const previewGranterOrgPosition2 = document.getElementById('previewGranterOrgPosition2');
+            const previewGranterOrgPosition3 = document.getElementById('previewGranterOrgPosition3');
             
-            // Referencias a elementos de vista previa
+            const previewAttorneyName = document.getElementById('previewAttorneyName');
+            const previewAttorneyName2 = document.getElementById('previewAttorneyName2');
+            const previewAttorneyName3 = document.getElementById('previewAttorneyName3');
+            const previewAttorneyGenderText = document.getElementById('previewAttorneyGenderText');
+            const previewAttorneyNationality = document.getElementById('previewAttorneyNationality');
+            const previewAttorneyProfession = document.getElementById('previewAttorneyProfession');
+            const previewAttorneyIdPrefix = document.getElementById('previewAttorneyIdPrefix');
+            const previewAttorneyIdType = document.getElementById('previewAttorneyIdType');
+            const previewAttorneyId = document.getElementById('previewAttorneyId');
+            const previewAttorneyId2 = document.getElementById('previewAttorneyId2');
+            const previewAttorneyAddress = document.getElementById('previewAttorneyAddress');
+            const previewAttorneyIdoneityContainer = document.getElementById('previewAttorneyIdoneityContainer');
+            const previewAttorneyIdoneity = document.getElementById('previewAttorneyIdoneity');
+            const previewAttorneyPositionContainer = document.getElementById('previewAttorneyPositionContainer');
+            const previewAttorneyPosition = document.getElementById('previewAttorneyPosition');
+            const previewAttorneyPosition2 = document.getElementById('previewAttorneyPosition2');
+            const previewAttorneyPrefix = document.getElementById('previewAttorneyPrefix');
+            const previewAttorneyTitle = document.getElementById('previewAttorneyTitle');
+            const previewAttorneyPowersPrefix = document.getElementById('previewAttorneyPowersPrefix');
+            const previewAttorneyPowersTitle = document.getElementById('previewAttorneyPowersTitle');
+            const previewAttorneyPowersGender = document.getElementById('previewAttorneyPowersGender');
+            
+            const previewEntityType = document.getElementById('previewEntityType');
+            const previewEntityType2 = document.getElementById('previewEntityType2');
+            const previewEntityName2 = document.getElementById('previewEntityName2');
+            const previewEntityName3 = document.getElementById('previewEntityName3');
+            const previewEntityName4 = document.getElementById('previewEntityName4');
+            const previewEntityName5 = document.getElementById('previewEntityName5');
+            const previewRegistrationNumber = document.getElementById('previewRegistrationNumber');
+            const previewOrgAddress = document.getElementById('previewOrgAddress');
+            
+            const previewPowerTypeText = document.getElementById('previewPowerTypeText');
+            const previewPowerScope = document.getElementById('previewPowerScope');
+            const previewGrantDate = document.getElementById('previewGrantDate');
+            const previewGrantPlace = document.getElementById('previewGrantPlace');
+            
+            // Elementos de acción
+            const generateBtn = document.getElementById('generateBtn');
             const previewPlaceholder = document.getElementById('previewPlaceholder');
             const documentPreview = document.getElementById('documentPreview');
             const documentActions = document.getElementById('documentActions');
-            const documentTitle = document.getElementById('documentTitle');
-            const recipientBlock = document.getElementById('recipientBlock');
-            const previewFullName = document.getElementById('preview-fullName');
-            const previewFullName2 = document.getElementById('preview-fullName2');
-            const previewGenderText = document.getElementById('preview-gender-text');
-            const previewNationality = document.getElementById('preview-nationality');
-            const previewIdNumber = document.getElementById('preview-idNumber');
-            const previewIdNumber2 = document.getElementById('preview-idNumber2');
-            const previewAddressContainer = document.getElementById('preview-address-container');
-            const previewAddress = document.getElementById('preview-address');
-            const previewPositionContainer = document.getElementById('preview-position-container');
-            const previewPosition = document.getElementById('preview-position');
-            
-            const organizationParagraph = document.getElementById('organization-paragraph');
-            const previewEntityType = document.getElementById('preview-entityType');
-            const previewEntityName = document.getElementById('preview-entityName');
-            const previewRegistrationNumber = document.getElementById('preview-registrationNumber');
-            const previewOrgAddress = document.getElementById('preview-orgAddress');
-            
-            const previewAttorneyName = document.getElementById('preview-attorneyName');
-            const previewAttorneyName2 = document.getElementById('preview-attorneyName2');
-            const previewAttorneyGenderText = document.getElementById('preview-attorneyGender-text');
-            const previewAttorneyNationality = document.getElementById('preview-attorneyNationality');
-            const previewAttorneyIdNumber = document.getElementById('preview-attorneyIdNumber');
-            const previewAttorneyIdNumber2 = document.getElementById('preview-attorneyIdNumber2');
-            const previewAttorneyProfession = document.getElementById('preview-attorneyProfession');
-            const previewAttorneyIdoneityContainer = document.getElementById('preview-attorneyIdoneity-container');
-            const previewAttorneyIdoneity = document.getElementById('preview-attorneyIdoneity');
-            const previewAttorneyPositionContainer = document.getElementById('preview-attorneyPosition-container');
-            const previewAttorneyPosition = document.getElementById('preview-attorneyPosition');
-            const previewAttorneyPosition2 = document.getElementById('preview-attorneyPosition2');
-            const previewAttorneyAddress = document.getElementById('preview-attorneyAddress');
-            const previewAttorneyEmail = document.getElementById('preview-attorneyEmail');
-            const previewAttorneyPhone = document.getElementById('preview-attorneyPhone');
-            
-            const previewPowerTypeText = document.getElementById('preview-powerType-text');
-            const previewPowerScope = document.getElementById('preview-powerScope');
-            const previewGrantDate = document.getElementById('preview-grantDate');
-            const previewGrantPlace = document.getElementById('preview-grantPlace');
-            const previewRecipientEntity = document.getElementById('preview-recipientEntity');
-            
-            // Botones
-            const generateBtn = document.getElementById('generateBtn');
+            const editorToolbar = document.getElementById('editorToolbar');
             const printBtn = document.getElementById('printBtn');
             const downloadPdfBtn = document.getElementById('downloadPdfBtn');
             const downloadWordBtn = document.getElementById('downloadWordBtn');
-            const googleDocsBtn = document.getElementById('googleDocsBtn');
             const copyBtn = document.getElementById('copyBtn');
-            const showHtmlBtn = document.getElementById('showHtmlBtn');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-            const copyHtmlBtn = document.getElementById('copyHtmlBtn');
-            const htmlModal = document.getElementById('htmlModal');
-            const htmlCode = document.getElementById('htmlCode');
-            const uploadLogoBtn = document.getElementById('uploadLogoBtn');
-            const logoPreview = document.getElementById('logoPreview');
-            const logoImage = document.getElementById('logoImage');
-            const documentLogo = document.getElementById('documentLogo');
-            const previewLogo = document.getElementById('previewLogo');
-            const logoControls = document.getElementById('logoControls');
-            const increaseSizeBtn = document.getElementById('increaseSizeBtn');
-            const decreaseSizeBtn = document.getElementById('decreaseSizeBtn');
-            const removeLogoBtn = document.getElementById('removeLogoBtn');
+            const googleDocsBtn = document.getElementById('googleDocsBtn');
             
-            // Función para formatear fecha (DD de mes del YYYY)
-            function formatDate(dateString) {
-                if (!dateString) return '[FECHA]';
-                const date = new Date(dateString);
-                const day = date.getDate();
-                return day;
-            }
+            // Elementos de edición
+            const boldBtn = document.getElementById('boldBtn');
+            const italicBtn = document.getElementById('italicBtn');
+            const underlineBtn = document.getElementById('underlineBtn');
+            const fontFamilySelect = document.getElementById('fontFamily');
+            const fontSizeSelect = document.getElementById('fontSize');
+            const lineHeightSelect = document.getElementById('lineHeight');
+            const alignLeftBtn = document.getElementById('alignLeftBtn');
+            const alignCenterBtn = document.getElementById('alignCenterBtn');
+            const alignJustifyBtn = document.getElementById('alignJustifyBtn');
             
-            // Mostrar/ocultar campo de otra entidad
-            recipientEntitySelect.addEventListener('change', function() {
-                if (this.value === 'OTRO') {
-                    otherEntityContainer.classList.remove('hidden');
+            // Elementos del visor de código
+            const viewCodeBtn = document.getElementById('viewCodeBtn');
+            const htmlCodeModal = document.getElementById('htmlCodeModal');
+            const htmlCodeContainer = document.getElementById('htmlCodeContainer');
+            const copyCodeBtn = document.getElementById('copyCodeBtn');
+            const closeCodeBtn = document.getElementById('closeCodeBtn');
+            
+            // Mostrar/ocultar campos adicionales
+            includeIdoneityCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    idoneityField.classList.remove('hidden');
                 } else {
-                    otherEntityContainer.classList.add('hidden');
+                    idoneityField.classList.add('hidden');
                 }
+                updatePreview();
             });
             
-            // Mostrar/ocultar campo de otro tipo de entidad
-            entityTypeSelect.addEventListener('change', function() {
-                if (this.value === 'Otro') {
-                    otherEntityTypeContainer.classList.remove('hidden');
+            includeAttorneyPositionCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    attorneyPositionField.classList.remove('hidden');
                 } else {
-                    otherEntityTypeContainer.classList.add('hidden');
+                    attorneyPositionField.classList.add('hidden');
                 }
+                updatePreview();
             });
             
-            // Mostrar/ocultar contenedor de logo
+            includeGranterAddressCheck.addEventListener('change', function() {
+                if (this.checked) {
+                    granterAddressField.classList.remove('hidden');
+                } else {
+                    granterAddressField.classList.add('hidden');
+                }
+                updatePreview();
+            });
+            
             includeLogo.addEventListener('change', function() {
                 if (this.checked) {
-                    logoContainer.classList.remove('hidden');
+                    logoField.classList.remove('hidden');
                 } else {
+                    logoField.classList.add('hidden');
                     logoContainer.classList.add('hidden');
-                    logoPreview.classList.add('hidden');
-                    documentLogo.classList.add('hidden');
                 }
             });
             
-            // Configurar carga de logo
-            uploadLogoBtn.addEventListener('click', function() {
-                logoFileInput.click();
-            });
-            
-            logoFileInput.addEventListener('change', function(e) {
+            logoInput.addEventListener('change', function(e) {
                 if (e.target.files && e.target.files[0]) {
                     const reader = new FileReader();
-                    
-                    reader.onload = function(event) {
-                        logoImage.src = event.target.result;
-                        previewLogo.src = event.target.result;
-                        logoPreview.classList.remove('hidden');
-                        documentLogo.classList.remove('hidden');
-                    }
-                    
+                    reader.onload = function(e) {
+                        logoImage.src = e.target.result;
+                        logoContainer.classList.remove('hidden');
+                    };
                     reader.readAsDataURL(e.target.files[0]);
                 }
             });
             
-            // Simular carga de logo cuando no hay archivo real
-            uploadLogoBtn.addEventListener('click', function() {
-                // Si no hay un input de archivo real, usamos un logo de ejemplo
-                if (!logoFileInput.files || logoFileInput.files.length === 0) {
-                    const logoUrl = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='50' viewBox='0 0 100 50'%3E%3Crect width='100' height='50' fill='%231E3A8A'/%3E%3Ctext x='50' y='30' font-family='Arial' font-size='16' fill='white' text-anchor='middle'%3EA&B%3C/text%3E%3C/svg%3E";
-                    
-                    logoImage.src = logoUrl;
-                    previewLogo.src = logoUrl;
-                    logoPreview.classList.remove('hidden');
-                    documentLogo.classList.remove('hidden');
+            logoSizeSmall.addEventListener('click', function() {
+                logoImage.style.width = '50px';
+            });
+            
+            logoSizeMedium.addEventListener('click', function() {
+                logoImage.style.width = '75px';
+            });
+            
+            logoSizeLarge.addEventListener('click', function() {
+                logoImage.style.width = '100px';
+            });
+            
+            logoRemove.addEventListener('click', function() {
+                logoContainer.classList.add('hidden');
+                logoInput.value = '';
+            });
+            
+            entityTypeSelect.addEventListener('change', function() {
+                if (this.value === 'Otro') {
+                    otherEntityTypeField.classList.remove('hidden');
+                } else {
+                    otherEntityTypeField.classList.add('hidden');
                 }
+                updatePreview();
             });
             
-            // Mostrar controles del logo al hacer clic en él
-            documentLogo.addEventListener('click', function() {
-                logoControls.classList.toggle('hidden');
-            });
-            
-            // Aumentar tamaño del logo
-            increaseSizeBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const currentHeight = parseInt(window.getComputedStyle(previewLogo).height);
-                previewLogo.style.height = (currentHeight + 10) + 'px';
-            });
-            
-            // Disminuir tamaño del logo
-            decreaseSizeBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                const currentHeight = parseInt(window.getComputedStyle(previewLogo).height);
-                if (currentHeight > 20) {
-                    previewLogo.style.height = (currentHeight - 10) + 'px';
+            orgTypeSelect.addEventListener('change', function() {
+                if (this.value === 'Otro') {
+                    otherOrgTypeField.classList.remove('hidden');
+                } else {
+                    otherOrgTypeField.classList.add('hidden');
                 }
+                updatePreview();
             });
             
-            // Eliminar logo
-            removeLogoBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                documentLogo.classList.add('hidden');
-                includeLogo.checked = false;
-                logoControls.classList.add('hidden');
-            });
+            // Función para formatear la fecha
+            function formatDate(dateString) {
+                if (!dateString) return '[FECHA]';
+                
+                const date = new Date(dateString);
+                const day = date.getDate();
+                const month = date.getMonth();
+                const year = date.getFullYear();
+                
+                const months = [
+                    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+                ];
+                
+                return `${day} de ${months[month]} de ${year}`;
+            }
             
-            // Actualizar vista previa en tiempo real
+            // Función para obtener el texto del estado civil según el género
+            function getMaritalStatusText(status, gender) {
+                const isFemale = gender === 'femenino';
+                
+                switch (status) {
+                    case 'soltero':
+                        return isFemale ? 'soltera' : 'soltero';
+                    case 'casado':
+                        return isFemale ? 'casada' : 'casado';
+                    case 'divorciado':
+                        return isFemale ? 'divorciada' : 'divorciado';
+                    case 'viudo':
+                        return isFemale ? 'viuda' : 'viudo';
+                    case 'unido':
+                        return isFemale ? 'en unión libre' : 'en unión libre';
+                    case 'separado':
+                        return isFemale ? 'separada' : 'separado';
+                    default:
+                        return '';
+                }
+            }
+            
+            // Actualizar la vista previa
             function updatePreview() {
-                // Tipo de poder
-                documentTitle.textContent = 'PODER';
+                // Entidad seleccionada
+                const selectedEntity = entityTypeSelect.value;
+                previewEntityHeader.textContent = selectedEntity === 'Otro' ? otherEntityTypeInput.value.toUpperCase() : selectedEntity;
                 
-                // Entidad destinataria
-                let recipientEntityText = '';
-                if (recipientEntitySelect.value === 'OTRO' && otherEntityInput.value) {
-                    recipientEntityText = otherEntityInput.value.toUpperCase();
-                } else if (recipientEntitySelect.value) {
-                    recipientEntityText = recipientEntitySelect.value;
+                // Ocultar el parent de la entidad si no es DGI
+                if (selectedEntity === 'DIRECCIÓN GENERAL DE INGRESOS') {
+                    previewEntityParent.textContent = 'MINISTERIO DE ECONOMÍA Y FINANZAS';
+                    previewEntityParent.classList.remove('hidden');
+                } else if (selectedEntity === 'AUTORIDAD NACIONAL DE ADUANAS') {
+                    previewEntityParent.textContent = 'MINISTERIO DE ECONOMÍA Y FINANZAS';
+                    previewEntityParent.classList.remove('hidden');
                 } else {
-                    recipientEntityText = '[ENTIDAD DESTINATARIA]';
-                }
-                previewRecipientEntity.textContent = recipientEntityText;
-                
-                // Información personal del otorgante
-                previewFullName.textContent = fullNameInput.value ? fullNameInput.value.toUpperCase() : '[NOMBRE]';
-                previewFullName2.textContent = fullNameInput.value ? fullNameInput.value.toUpperCase() : '[NOMBRE]';
-                previewNationality.textContent = nationalityInput.value ? nationalityInput.value.toUpperCase() : '[NACIONALIDAD]';
-                previewIdNumber.textContent = idNumberInput.value ? idNumberInput.value.toUpperCase() : '[CÉDULA]';
-                previewIdNumber2.textContent = idNumberInput.value ? idNumberInput.value.toUpperCase() : '[CÉDULA]';
-                
-                // Actualizar género del otorgante
-                const gender = genderSelect.value;
-                if (gender === 'masculino') {
-                    previewGenderText.textContent = '[GÉNERO]';
-                } else {
-                    previewGenderText.textContent = '[GÉNERO]';
+                    previewEntityParent.classList.add('hidden');
                 }
                 
-                // Mostrar/ocultar domicilio del otorgante
-                if (includeAddressCheck.checked) {
-                    previewAddressContainer.classList.remove('hidden');
-                    previewAddress.textContent = addressInput.value ? addressInput.value.toUpperCase() : '[DOMICILIO]';
+                // Datos del poderdante
+                previewGranterName.textContent = granterNameInput.value ? granterNameInput.value.toUpperCase() : '[NOMBRE DEL PODERDANTE]';
+                previewGranterName2.textContent = granterNameInput.value ? granterNameInput.value.toUpperCase() : '[NOMBRE DEL PODERDANTE]';
+                
+                // Género del poderdante
+                const granterGender = granterGenderSelect.value;
+                if (granterGender === 'femenino') {
+                    previewGranterGenderText.textContent = 'mujer';
+                    previewGranterNationality.textContent = 'panameña';
+                    previewGranterIdPrefix.textContent = 'portadora';
+                    previewGranterPrefix.textContent = 'a la';
+                    previewGranterTitle.textContent = 'Licenciada';
                 } else {
-                    previewAddressContainer.classList.add('hidden');
+                    previewGranterGenderText.textContent = 'varón';
+                    previewGranterNationality.textContent = 'panameño';
+                    previewGranterIdPrefix.textContent = 'portador';
+                    previewGranterPrefix.textContent = 'al';
+                    previewGranterTitle.textContent = 'Licenciado';
                 }
                 
-                // Mostrar/ocultar cargo del otorgante
-                if (includePositionCheck.checked) {
-                    previewPositionContainer.classList.remove('hidden');
-                    previewPosition.textContent = positionInput.value ? positionInput.value.toUpperCase() : '[CARGO]';
+                // Tipo de identificación del poderdante
+                const granterIdType = granterIdTypeSelect.value;
+                if (granterIdType === 'cédula') {
+                    previewGranterIdType.textContent = 'cédula de identidad personal';
+                } else if (granterIdType === 'pasaporte') {
+                    previewGranterIdType.textContent = 'pasaporte';
                 } else {
-                    previewPositionContainer.classList.add('hidden');
+                    previewGranterIdType.textContent = 'carnet de residencia';
                 }
                 
-                // Información del apoderado
+                // Número de identificación del poderdante
+                previewGranterId.textContent = granterIdInput.value ? granterIdInput.value.toUpperCase() : '[NÚMERO DE IDENTIFICACIÓN]';
+                previewGranterId2.textContent = granterIdInput.value ? granterIdInput.value.toUpperCase() : '[NÚMERO DE IDENTIFICACIÓN]';
+                
+                // Domicilio del poderdante
+                if (includeGranterAddressCheck.checked) {
+                    previewGranterAddressContainer.classList.remove('hidden');
+                    previewGranterAddress.textContent = granterAddressInput.value ? granterAddressInput.value.toUpperCase() : '[DOMICILIO]';
+                } else {
+                    previewGranterAddressContainer.classList.add('hidden');
+                }
+                
+                // Datos del apoderado
                 previewAttorneyName.textContent = attorneyNameInput.value ? attorneyNameInput.value.toUpperCase() : '[NOMBRE DEL APODERADO]';
                 previewAttorneyName2.textContent = attorneyNameInput.value ? attorneyNameInput.value.toUpperCase() : '[NOMBRE DEL APODERADO]';
-                previewAttorneyNationality.textContent = attorneyNationalityInput.value ? attorneyNationalityInput.value.toUpperCase() : '[NACIONALIDAD]';
-                previewAttorneyIdNumber.textContent = attorneyIdNumberInput.value ? attorneyIdNumberInput.value.toUpperCase() : '[CÉDULA]';
-                previewAttorneyIdNumber2.textContent = attorneyIdNumberInput.value ? attorneyIdNumberInput.value.toUpperCase() : '[CÉDULA]';
-                previewAttorneyProfession.textContent = attorneyProfessionInput.value ? attorneyProfessionInput.value.toUpperCase() : '[PROFESIÓN]';
-                previewAttorneyAddress.textContent = attorneyAddressInput.value ? attorneyAddressInput.value.toUpperCase() : '[DOMICILIO PROFESIONAL]';
-                previewAttorneyEmail.textContent = attorneyEmailInput.value ? attorneyEmailInput.value.toUpperCase() : '[EMAIL]';
-                previewAttorneyPhone.textContent = attorneyPhoneInput.value ? attorneyPhoneInput.value.toUpperCase() : '[TELÉFONO]';
+                previewAttorneyName3.textContent = attorneyNameInput.value ? attorneyNameInput.value.toUpperCase() : '[NOMBRE DEL APODERADO]';
                 
-                // Actualizar género del apoderado
-                const attorneyGender = attorneyGenderSelect.value;
-                if (attorneyGender === 'masculino') {
-                    previewAttorneyGenderText.textContent = '[GÉNERO]';
+                // Profesión del apoderado
+                previewAttorneyProfession.textContent = attorneyProfessionInput.value ? attorneyProfessionInput.value.toUpperCase() : '[PROFESIÓN]';
+                
+                // Tipo de identificación del apoderado
+                const attorneyIdType = attorneyIdTypeSelect.value;
+                if (attorneyIdType === 'cédula') {
+                    previewAttorneyIdType.textContent = 'cédula de identidad personal';
+                } else if (attorneyIdType === 'pasaporte') {
+                    previewAttorneyIdType.textContent = 'pasaporte';
                 } else {
-                    previewAttorneyGenderText.textContent = '[GÉNERO]';
+                    previewAttorneyIdType.textContent = 'carnet de residencia';
+                }
+                
+                // Número de identificación del apoderado
+                previewAttorneyId.textContent = attorneyIdInput.value ? attorneyIdInput.value.toUpperCase() : '[NÚMERO DE IDENTIFICACIÓN]';
+                previewAttorneyId2.textContent = attorneyIdInput.value ? attorneyIdInput.value.toUpperCase() : '[NÚMERO DE IDENTIFICACIÓN]';
+                
+                // Domicilio del apoderado
+                previewAttorneyAddress.textContent = attorneyAddressInput.value ? attorneyAddressInput.value.toUpperCase() : '[DOMICILIO]';
+                
+                // Género del apoderado
+                const attorneyGender = attorneyGenderSelect.value;
+                if (attorneyGender === 'femenino') {
+                    previewAttorneyGenderText.textContent = 'mujer';
+                    previewAttorneyNationality.textContent = 'panameña';
+                    previewAttorneyIdPrefix.textContent = 'portadora';
+                    previewAttorneyPrefix.textContent = 'a la';
+                    previewAttorneyTitle.textContent = 'Licenciada';
+                    previewAttorneyPowersPrefix.textContent = 'La';
+                    previewAttorneyPowersTitle.textContent = 'Licenciada';
+                    previewAttorneyPowersGender.textContent = 'facultada';
+                } else {
+                    previewAttorneyGenderText.textContent = 'varón';
+                    previewAttorneyNationality.textContent = 'panameño';
+                    previewAttorneyIdPrefix.textContent = 'portador';
+                    previewAttorneyPrefix.textContent = 'al';
+                    previewAttorneyTitle.textContent = 'Licenciado';
+                    previewAttorneyPowersPrefix.textContent = 'El';
+                    previewAttorneyPowersTitle.textContent = 'Licenciado';
+                    previewAttorneyPowersGender.textContent = 'facultado';
                 }
                 
                 // Mostrar/ocultar número de idoneidad
@@ -878,163 +1032,330 @@
                     previewAttorneyPosition2.textContent = attorneyPositionInput.value ? attorneyPositionInput.value.toUpperCase() : '[CARGO]';
                 } else {
                     previewAttorneyPositionContainer.classList.add('hidden');
-                    previewAttorneyPosition2.textContent = '[CARGO]';
+                    previewAttorneyPosition2.textContent = attorneyProfessionInput.value ? attorneyProfessionInput.value.toUpperCase() : '[PROFESIÓN]';
+                }
+                
+                // Mostrar/ocultar información de la organización
+                if (includeOrganizationCheck.checked) {
+                    // Tipo de organización
+                    let orgTypeText = '';
+                    if (orgTypeSelect.value === 'Otro' && otherOrgTypeInput.value) {
+                        orgTypeText = otherOrgTypeInput.value.toUpperCase();
+                    } else if (orgTypeSelect.value) {
+                        orgTypeText = orgTypeSelect.value.toUpperCase();
+                    } else {
+                        orgTypeText = '[TIPO DE ORGANIZACIÓN]';
+                    }
+                    previewEntityType.textContent = orgTypeText;
+                    previewEntityType2.textContent = orgTypeText.toLowerCase();
+                    
+                    const entityName = entityNameInput.value ? entityNameInput.value.toUpperCase() : '[NOMBRE DE ORGANIZACIÓN]';
+                    previewEntityName2.textContent = entityName;
+                    previewEntityName3.textContent = entityName;
+                    previewEntityName4.textContent = entityName;
+                    previewEntityName5.textContent = entityName;
+                    
+                    previewRegistrationNumber.textContent = registrationNumberInput.value ? registrationNumberInput.value.toUpperCase() : '[REGISTRO]';
+                    previewOrgAddress.textContent = orgAddressInput.value ? orgAddressInput.value.toUpperCase() : '[DOMICILIO DE ORGANIZACIÓN]';
                 }
                 
                 // Tipo de poder
-                previewPowerTypeText.textContent = powerTypeSelect.value === 'general' ? 'Poder General' : 'Poder Especial';
+                const powerType = powerTypeSelect.value;
+                if (powerType === 'general') {
+                    previewPowerTypeText.textContent = 'PODER GENERAL';
+                } else {
+                    previewPowerTypeText.textContent = 'PODER ESPECIAL';
+                }
                 
                 // Objeto del poder
-                previewPowerScope.textContent = powerScopeInput.value ? powerScopeInput.value.toUpperCase() : '[OBJETO DEL PODER]';
+                previewPowerScope.textContent = powerScopeInput.value ? powerScopeInput.value.toUpperCase() : 'PRESENTE Y GESTIONE, ANTE LA DIRECCIÓN GENERAL DE INGRESOS DEL MINISTERIO DE ECONOMÍA Y FINANZAS, LA SOLICITUD DE AUTORIZACIÓN DE RECIBIR DONACIONES DEDUCIBLES DEL IMPUESTO SOBRE LA RENTA DE LOS ORGANISMO SIN FINES DE LUCRO';
                 
-                // Fecha y lugar
-                previewGrantDate.textContent = grantDateInput.value ? formatDate(grantDateInput.value) : '[FECHA]';
-                previewGrantPlace.textContent = grantPlaceInput.value ? grantPlaceInput.value.toUpperCase() : '[LUGAR]';
+                // Fecha y lugar (sin negrita y en minúsculas)
+                previewGrantDate.textContent = grantDateInput.value ? formatDate(grantDateInput.value) : '[fecha]';
+                previewGrantPlace.textContent = grantPlaceInput.value ? grantPlaceInput.value : '[lugar]';
             }
             
-            // Actualizar información de organización
-            function updateOrganizationInfo() {
-                if (includeOrganizationCheck.checked) {
-                    organizationParagraph.classList.remove('hidden');
-                    organizationFields.classList.remove('opacity-50', 'pointer-events-none');
-                    
-                    let entityType = '';
-                    if (entityTypeSelect.value === 'Otro' && otherEntityTypeInput.value) {
-                        entityType = otherEntityTypeInput.value.toUpperCase();
-                    } else if (entityTypeSelect.value) {
-                        entityType = entityTypeSelect.value.toUpperCase();
-                    } else {
-                        entityType = '[TIPO DE ORGANIZACIÓN]';
-                    }
-                    
-                    previewEntityType.textContent = entityType;
-                    previewEntityName.textContent = entityNameInput.value ? entityNameInput.value.toUpperCase() : '[NOMBRE DE ORGANIZACIÓN]';
-                    previewRegistrationNumber.textContent = registrationNumberInput.value ? registrationNumberInput.value.toUpperCase() : '[REGISTRO]';
-                    previewOrgAddress.textContent = orgAddressInput.value ? orgAddressInput.value.toUpperCase() : '[DOMICILIO DE ORGANIZACIÓN]';
-                } else {
-                    organizationParagraph.classList.add('hidden');
-                    organizationFields.classList.add('opacity-50', 'pointer-events-none');
-                }
-            }
-            
-            // Manejar la inclusión/exclusión de la organización
+            // Mostrar/ocultar campos de organización
             includeOrganizationCheck.addEventListener('change', function() {
                 if (this.checked) {
-                    organizationFields.classList.remove('opacity-50', 'pointer-events-none');
+                    organizationFields.classList.remove('hidden');
                 } else {
-                    organizationFields.classList.add('opacity-50', 'pointer-events-none');
+                    organizationFields.classList.add('hidden');
                 }
-                updateOrganizationInfo();
+                updatePreview();
             });
             
-            // Event listeners para actualización en tiempo real
-            const formInputs = document.querySelectorAll('input, select, textarea');
-            formInputs.forEach(input => {
+            // Generar documento
+            generateBtn.addEventListener('click', function() {
+                previewPlaceholder.classList.add('hidden');
+                documentPreview.classList.remove('hidden');
+                documentActions.classList.remove('hidden');
+                editorToolbar.classList.remove('hidden');
+                updatePreview();
+            });
+            
+            // Imprimir documento
+            printBtn.addEventListener('click', function() {
+                // Crear una copia del documento para imprimir
+                const printContent = documentPreview.cloneNode(true);
+                printContent.style.fontFamily = "'Times New Roman', Times, serif";
+                printContent.style.fontSize = "12pt";
+                
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Poder Legal</title>
+                        <style>
+                            body {
+                                font-family: 'Times New Roman', Times, serif;
+                                font-size: 12pt;
+                                line-height: 1.5;
+                                padding: 1cm;
+                            }
+                            .body-paragraph {
+                                text-align: justify;
+                                margin-bottom: 1em;
+                            }
+                            .filled-data {
+                                font-weight: bold;
+                            }
+                            .signature-line {
+                                width: 100%;
+                                border-bottom: 1px solid #000;
+                                margin-bottom: 8px;
+                            }
+                            .date-place-text {
+                                font-weight: normal;
+                            }
+                            @page {
+                                size: legal;
+                                margin: 2cm;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        ${printContent.innerHTML}
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+                printWindow.focus();
+                setTimeout(function() {
+                    printWindow.print();
+                    printWindow.close();
+                }, 500);
+            });
+            
+            // Descargar como PDF
+            downloadPdfBtn.addEventListener('click', function() {
+                const element = document.getElementById('documentPreview');
+                const opt = {
+                    margin: [1, 1, 1, 1],
+                    filename: 'poder_legal.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2 },
+                    jsPDF: { unit: 'in', format: 'legal', orientation: 'portrait' },
+                    pagebreak: { mode: 'avoid-all' }
+                };
+                
+                html2pdf().set(opt).from(element).save();
+            });
+            
+            // Copiar al portapapeles
+            copyBtn.addEventListener('click', function() {
+                const content = document.getElementById('documentPreview').innerText;
+                navigator.clipboard.writeText(content).then(function() {
+                    alert('Documento copiado al portapapeles');
+                }, function(err) {
+                    console.error('Error al copiar: ', err);
+                });
+            });
+            
+            // Descargar como Word (simulado)
+            downloadWordBtn.addEventListener('click', function() {
+                const header = `
+                    <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+                          xmlns:w='urn:schemas-microsoft-com:office:word' 
+                          xmlns='http://www.w3.org/TR/REC-html40'>
+                    <head>
+                        <meta charset='utf-8'>
+                        <title>Poder Legal</title>
+                        <style>
+                            body {
+                                font-family: 'Times New Roman', Times, serif;
+                                font-size: 12pt;
+                                line-height: 1.5;
+                            }
+                            .body-paragraph {
+                                text-align: justify;
+                                margin-bottom: 1em;
+                            }
+                            .filled-data {
+                                font-weight: bold;
+                            }
+                            .signature-line {
+                                width: 100%;
+                                border-bottom: 1px solid #000;
+                                margin-bottom: 8px;
+                            }
+                            .date-place-text {
+                                font-weight: normal;
+                            }
+                            @page {
+                                size: legal;
+                                margin: 2cm;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                `;
+                const footer = "</body></html>";
+                const sourceHTML = header + document.getElementById('documentPreview').innerHTML + footer;
+                
+                const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+                const fileDownload = document.createElement("a");
+                document.body.appendChild(fileDownload);
+                fileDownload.href = source;
+                fileDownload.download = 'poder_legal.doc';
+                fileDownload.click();
+                document.body.removeChild(fileDownload);
+            });
+            
+            // Abrir en Google Docs (simulado)
+            googleDocsBtn.addEventListener('click', function() {
+                alert('Esta función requiere integración con Google Docs API. Por favor, copie el contenido y péguelo en un documento de Google Docs.');
+            });
+            
+            // Funciones de edición de texto
+            
+            // Función para aplicar formato al texto seleccionado
+            function execFormatCommand(command, value = null) {
+                document.execCommand(command, false, value);
+            }
+            
+            // Botón de negrita
+            boldBtn.addEventListener('click', function() {
+                execFormatCommand('bold');
+                this.classList.toggle('active');
+            });
+            
+            // Botón de cursiva
+            italicBtn.addEventListener('click', function() {
+                execFormatCommand('italic');
+                this.classList.toggle('active');
+            });
+            
+            // Botón de subrayado
+            underlineBtn.addEventListener('click', function() {
+                execFormatCommand('underline');
+                this.classList.toggle('active');
+            });
+            
+            // Selector de fuente
+            fontFamilySelect.addEventListener('change', function() {
+                const editableElements = document.querySelectorAll('.editable-content');
+                editableElements.forEach(el => {
+                    el.style.fontFamily = this.value;
+                });
+            });
+            
+            // Selector de tamaño de fuente
+            fontSizeSelect.addEventListener('change', function() {
+                const editableElements = document.querySelectorAll('.editable-content');
+                editableElements.forEach(el => {
+                    el.style.fontSize = this.value;
+                });
+            });
+            
+            // Selector de interlineado
+            lineHeightSelect.addEventListener('change', function() {
+                const editableElements = document.querySelectorAll('.editable-content');
+                editableElements.forEach(el => {
+                    el.style.lineHeight = this.value;
+                });
+            });
+            
+            // Botón de alineación a la izquierda
+            alignLeftBtn.addEventListener('click', function() {
+                execFormatCommand('justifyLeft');
+                alignLeftBtn.classList.add('active');
+                alignCenterBtn.classList.remove('active');
+                alignJustifyBtn.classList.remove('active');
+            });
+            
+            // Botón de centrado
+            alignCenterBtn.addEventListener('click', function() {
+                execFormatCommand('justifyCenter');
+                alignCenterBtn.classList.add('active');
+                alignLeftBtn.classList.remove('active');
+                alignJustifyBtn.classList.remove('active');
+            });
+            
+            // Botón de justificado
+            alignJustifyBtn.addEventListener('click', function() {
+                execFormatCommand('justifyFull');
+                alignJustifyBtn.classList.add('active');
+                alignLeftBtn.classList.remove('active');
+                alignCenterBtn.classList.remove('active');
+            });
+            
+            // Visor de código HTML
+            viewCodeBtn.addEventListener('click', function() {
+                const htmlCode = document.documentElement.outerHTML;
+                htmlCodeContainer.textContent = htmlCode;
+                htmlCodeModal.style.display = 'block';
+            });
+            
+            copyCodeBtn.addEventListener('click', function() {
+                const codeText = htmlCodeContainer.textContent;
+                navigator.clipboard.writeText(codeText).then(function() {
+                    alert('Código HTML copiado al portapapeles');
+                }, function(err) {
+                    console.error('Error al copiar: ', err);
+                });
+            });
+            
+            closeCodeBtn.addEventListener('click', function() {
+                htmlCodeModal.style.display = 'none';
+            });
+            
+            // Cerrar modal al hacer clic fuera del contenido
+            window.addEventListener('click', function(event) {
+                if (event.target === htmlCodeModal) {
+                    htmlCodeModal.style.display = 'none';
+                }
+            });
+            
+            // Hacer que todos los campos de entrada actualicen la vista previa
+            const allInputs = document.querySelectorAll('input, textarea, select');
+            allInputs.forEach(input => {
                 input.addEventListener('input', updatePreview);
                 input.addEventListener('change', updatePreview);
             });
             
-            // Botón de generar documento
-            generateBtn.addEventListener('click', function() {
-                updatePreview();
-                updateOrganizationInfo();
-                
-                // Mostrar la vista previa y ocultar el placeholder
-                previewPlaceholder.classList.add('hidden');
-                documentPreview.classList.remove('hidden');
-                documentActions.classList.remove('hidden');
-                
-                // Actualizar la vista previa con los datos del formulario
-                updatePreview();
+            // Hacer que todos los checkboxes actualicen la vista previa
+            const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+            allCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updatePreview);
             });
             
-            // Botón para imprimir
-            printBtn.addEventListener('click', function() {
-                window.print();
-            });
+            // Inicializar la vista previa con valores por defecto
+            updatePreview();
             
-            // Botón para descargar como PDF
-            downloadPdfBtn.addEventListener('click', function() {
-                alert('Preparando documento para descarga como PDF...');
-                // En un entorno real, aquí se implementaría la conversión a PDF
-                // Podría usar una biblioteca como html2pdf.js o jsPDF
-                window.print(); // Como alternativa, usamos la función de impresión del navegador
-            });
+            // Establecer justificado como predeterminado para los párrafos
+            alignJustifyBtn.classList.add('active');
+            alignLeftBtn.classList.remove('active');
             
-            // Botón para descargar como Word
-            downloadWordBtn.addEventListener('click', function() {
-                alert('Preparando documento para descarga como Word...');
-                // En un entorno real, aquí se implementaría la conversión a Word
-                // Podría usar una biblioteca como docx.js
-                
-                // Simulación de descarga
-                const blob = new Blob([documentPreview.innerHTML], {type: 'application/msword'});
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = 'Poder_' + new Date().toISOString().slice(0,10) + '.doc';
-                link.click();
-            });
-            
-            // Botón para abrir en Google Docs
-            googleDocsBtn.addEventListener('click', function() {
-                alert('Preparando documento para abrir en Google Docs...');
-                // En un entorno real, aquí se implementaría la integración con Google Docs API
-            });
-            
-            // Botón para copiar contenido
-            copyBtn.addEventListener('click', function() {
-                const range = document.createRange();
-                range.selectNode(documentPreview);
-                window.getSelection().removeAllRanges();
-                window.getSelection().addRange(range);
-                document.execCommand('copy');
-                window.getSelection().removeAllRanges();
-                alert('Contenido copiado al portapapeles');
-            });
-            
-            // Botón para mostrar modal con código HTML
-            showHtmlBtn.addEventListener('click', function() {
-                htmlCode.textContent = document.documentElement.outerHTML;
-                htmlModal.classList.remove('hidden');
-                htmlModal.style.display = 'flex';
-            });
-            
-            // Cerrar modal
-            closeModalBtn.addEventListener('click', function() {
-                htmlModal.classList.add('hidden');
-                htmlModal.style.display = 'none';
-            });
-            
-            // Copiar código HTML
-            copyHtmlBtn.addEventListener('click', function() {
-                navigator.clipboard.writeText(htmlCode.textContent)
-                    .then(() => {
-                        alert('Código HTML copiado al portapapeles');
-                    })
-                    .catch(err => {
-                        console.error('Error al copiar: ', err);
-                    });
-            });
-            
-            // Cerrar modal al hacer clic fuera
-            htmlModal.addEventListener('click', function(e) {
-                if (e.target === htmlModal) {
-                    htmlModal.classList.add('hidden');
-                    htmlModal.style.display = 'none';
-                }
-            });
-            
-            // Inicializar estado de los campos
-            if (!includeOrganizationCheck.checked) {
-                organizationFields.classList.add('opacity-50', 'pointer-events-none');
-            }
-            
-            // Generar documento automáticamente al cargar
-            setTimeout(() => {
-                generateBtn.click();
-            }, 500);
+            // Establecer la fecha actual por defecto
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            grantDateInput.value = `${year}-${month}-${day}`;
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94de8956162e748b',t:'MTc0OTYxNzkzOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: medium; visibility: hidden;"></iframe>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94dec8ecb110a671',t:'MTc0OTYyMDU0My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: medium; visibility: hidden;"></iframe>
 
 </body></html>
